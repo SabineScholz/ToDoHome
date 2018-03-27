@@ -15,6 +15,8 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final String EXTRA_MESSAGE = "com.example.android.todohome.TASK";
+
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     TaskAdapter taskAdapter;
@@ -39,8 +41,9 @@ public class MainActivity extends AppCompatActivity {
 
         taskListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 Intent intent = new Intent(getApplicationContext(), TaskActivity.class);
+                intent.putExtra(EXTRA_MESSAGE, taskAdapter.getItem(position));
                 startActivity(intent);
             }
         });

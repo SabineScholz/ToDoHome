@@ -1,4 +1,15 @@
 <resources>
-    <string name="app_name">To Do Home</string>
+    <string name="app_name">Simple Task App</string>
+
+    <!-- strings for the edit task layout -->
     <string name="edit_task_details">Edit Task Details</string>
+    <string name="label_task">Task</string>
+    <string name="label_description">Description</string>
+    <string name="label_creation_date">Creation Date</string>
+    <string name="label_done">Done</string>
+    <string name="filter_show_all_tasks">Show all tasks</string>
+    <string name="filter_unfinished_tasks">Show unfinished tasks</string>
+    <string name="delete_unfinished_tasks">Delete finished tasks</string>
+
+
 </resources>

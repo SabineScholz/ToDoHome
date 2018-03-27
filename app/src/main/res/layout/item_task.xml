@@ -11,12 +11,13 @@
         android:layout_width="wrap_content"
         android:layout_height="@dimen/list_item_height"
         android:paddingLeft="16dp"/>
-    
+
     <TextView
         android:id="@+id/title_text_view"
         android:layout_width="match_parent"
         android:layout_height="@dimen/list_item_height"
-        android:text="Groceries"
-        android:paddingLeft="8dp"/>
+        android:textSize="@dimen/default_text_size"
+        android:paddingLeft="8dp"
+        android:text="Groceries" />
 
 </LinearLayout>
