@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">To Do Home</string>
+    <string name="edit_task_details">Edit Task Details</string>
+</resources>
