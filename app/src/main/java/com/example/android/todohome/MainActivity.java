@@ -14,9 +14,10 @@ import com.example.android.todohome.model.TaskList;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static final String EXTRA_MESSAGE = "com.example.android.todohome.TASK";
+    public static final String TASK_MESSAGE = "com.example.android.todohome.TASK";
     public static final String TASKS_KEY = "com.example.android.todohome.TASKLIST";
-    private static final int REQUEST_CODE = 0;
+    private static final int REQUEST_CODE_EDIT_TASK = 0;
+    private static final int REQUEST_CODE_CREATE_TASK = 1;
     private static final String LOG_TAG = MainActivity.class.getSimpleName() + " TEST";
 
     private TaskList tasks;
@@ -56,8 +57,8 @@ public class MainActivity extends AppCompatActivity {
                 // Start the activity that show the details of the
                 // task that was clicked on. Put the task object into the intent.
                 Intent intent = new Intent(getApplicationContext(), EditTaskActivity.class);
-                intent.putExtra(EXTRA_MESSAGE, taskAdapter.getItem(position));
-                startActivityForResult(intent, 0);
+                intent.putExtra(TASK_MESSAGE, taskAdapter.getItem(position));
+                startActivityForResult(intent, REQUEST_CODE_CREATE_TASK);
             }
         });
 
@@ -70,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Start the activity with which new tasks can be created
                 Intent intent = new Intent(getApplicationContext(), CreateTaskActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, 1 );
             }
         });
     }
@@ -85,21 +86,19 @@ public class MainActivity extends AppCompatActivity {
     /**
      * This function is called when the child activity this activity started
      * has finished and returns its result.
-     * @param requestCode
-     * @param resultCode
-     * @param intent
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        Log.d(LOG_TAG, "onActivityResult requestCode: " + requestCode + ", resultCode: " + resultCode);
 
         // Make sure that this result corresponds to the request we made and that the request was successful
-        if(requestCode == REQUEST_CODE && resultCode == RESULT_OK) {
+        if((requestCode == REQUEST_CODE_EDIT_TASK || requestCode == REQUEST_CODE_CREATE_TASK) && resultCode == RESULT_OK) {
 
             // Extract the task object from the intent
-            Task task = intent.getParcelableExtra(EXTRA_MESSAGE);
+            Task task = intent.getParcelableExtra(TASK_MESSAGE);
             Log.d(LOG_TAG,"onActivityResult: " + task);
 
-            // Update the task in the list
+            // Update or add the task
             updateOrAddTask(task);
 
             // Notify the adapter that its data have changed
@@ -112,7 +111,6 @@ public class MainActivity extends AppCompatActivity {
      * Updates an already existing task in the tasks list with the data contained
      * in this task.
      * If the task does not exist in the list yet, it is added to the list.
-     * @param task
      */
     private void updateOrAddTask(Task task) {
         if(!tasks.contains(task)) {

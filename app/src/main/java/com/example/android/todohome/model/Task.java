@@ -36,8 +36,12 @@ public class Task implements Parcelable {
     private boolean done;
 
 
-    public Task(String title) {
+    public Task() {
         this.id = MAX_ID++;
+    }
+
+    public Task(String title) {
+        this();
         this.title = title;
         this.creationDate = GregorianCalendar.getInstance().getTime();
     }

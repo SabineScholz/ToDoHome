@@ -1,9 +1,7 @@
 package com.example.android.todohome;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -30,7 +28,7 @@ public class EditTaskFragment extends Fragment {
     private CheckBox done;
     private View rootView;
 
-    private static final String LOG_TAG = EditTaskActivity.class.getSimpleName() + " TEST";
+    private static final String LOG_TAG = EditTaskFragment.class.getSimpleName() + " TEST";
 
     private boolean change_detected;
 
@@ -64,12 +62,22 @@ public class EditTaskFragment extends Fragment {
         // Get the intent that started this fragment
         Intent intent = getActivity().getIntent();
 
-        // Extract the task object that came with the intent
-        currentTask = intent.getParcelableExtra(MainActivity.EXTRA_MESSAGE);
-        Log.d(LOG_TAG, "Received task object " + currentTask);
 
-        // Fill the views with data from the task
-        setDataInViews();
+        // Check whether the intent contains a task that is to be edited
+        if(intent.hasExtra(MainActivity.TASK_MESSAGE)) {
+
+            // Extract the task object that came with the intent
+            currentTask = intent.getParcelableExtra(MainActivity.TASK_MESSAGE);
+            Log.d(LOG_TAG, "Received task object " + currentTask);
+
+            // Fill the views with data from the task
+            setDataInViews();
+
+        } else {
+
+            // Create new task
+            currentTask = new Task();
+        }
 
         // add change listeners to the views so that we can warn the user if he leaves the activity
         // while there are unsaved changes
@@ -125,7 +133,7 @@ public class EditTaskFragment extends Fragment {
 
         // Send the potentially updated task back to the MainActivity (we could also check whether any changes were made at all and only send the task back if changes were made)
         Intent intent = new Intent();
-        intent.putExtra(MainActivity.EXTRA_MESSAGE, currentTask);
+        intent.putExtra(MainActivity.TASK_MESSAGE, currentTask);
         getActivity().setResult(Activity.RESULT_OK, intent);
         getActivity().finish();
     }
@@ -133,9 +141,6 @@ public class EditTaskFragment extends Fragment {
     /**
      * Is triggered when the up button is clicked on. If changes have been made
      * to the task data, the user is asked whether the changes should be saved or discarded.
-     *
-     * @param item
-     * @return
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -164,27 +169,5 @@ public class EditTaskFragment extends Fragment {
                 change_detected = true;
             }
         });
-    }
-
-
-
-
-
-
-
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
     }
 }
