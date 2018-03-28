@@ -11,9 +11,9 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.util.ArrayList;
+import com.example.android.todohome.model.Task;
+
 import java.util.List;
 
 /**
@@ -23,6 +23,7 @@ import java.util.List;
 public class TaskAdapter extends ArrayAdapter<Task> {
 
     private static final String LOG_TAG = TaskAdapter.class.getSimpleName();
+
 
 
     public TaskAdapter(@NonNull Context context, List<Task> tasks) {
@@ -47,20 +48,20 @@ public class TaskAdapter extends ArrayAdapter<Task> {
 
         // Fill the views with data from the current Task object
         checkBox.setChecked(task.isDone());
-        Log.d(LOG_TAG, "TEST getView: " + task.isDone() + " checkBox.isSelected: " + checkBox.isChecked());
+//        Log.d(LOG_TAG, "TEST getView: " + task.isDone() + " checkBox.isSelected: " + checkBox.isChecked());
         titleTextView.setText(task.getTitle());
 
         checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                Log.d(LOG_TAG, "TEST checked changed: " + b);
+//                Log.d(LOG_TAG, "TEST checked changed: " + b);
             }
         });
 
         checkBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d(LOG_TAG, "TEST checkbox clicked");
+//                Log.d(LOG_TAG, "TEST checkbox clicked");
                 // How to update the task in the array list of the adapter from here? position of
                 // clicked item in list unknown...?
             }
@@ -68,13 +69,4 @@ public class TaskAdapter extends ArrayAdapter<Task> {
 
         return convertView;
     }
-
-    public boolean remove(int position) {
-        if(getItem(position) != null) {
-            remove(getItem(position));
-            return true;
-        }
-        return false;
-    }
-
 }

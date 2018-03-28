@@ -1,4 +1,4 @@
-package com.example.android.todohome;
+package com.example.android.todohome.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -120,7 +120,7 @@ public class Task implements Parcelable {
 
     @Override
     public String toString() {
-        return "Title: " + title + ", Description: " + description + ", done: " + done;
+        return "ID: " + id + ", Title: " + title + ", Description: " + description + ", done: " + done;
     }
 
     /**
