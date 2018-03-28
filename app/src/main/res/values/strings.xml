@@ -10,7 +10,10 @@
     <string name="filter_show_all_tasks">Show all tasks</string>
     <string name="filter_unfinished_tasks">Show unfinished tasks</string>
     <string name="delete_unfinished_tasks">Delete finished tasks</string>
-    <string name="title_activity_main2">Main2Activity</string>
 
+    <!-- strings for the warning dialog that is shown when the user leaves the task activity while there are unsaved changes-->
+    <string name="warning_message">Discard changes?</string>
+    <string name="cancel">cancel</string>
+    <string name="discard_changes">discard</string>
 
 </resources>

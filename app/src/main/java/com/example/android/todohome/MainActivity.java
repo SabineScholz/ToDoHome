@@ -11,19 +11,14 @@ import android.widget.ListView;
 import com.example.android.todohome.model.Task;
 import com.example.android.todohome.model.TaskList;
 
-import java.util.ArrayList;
-
 public class MainActivity extends AppCompatActivity {
 
     public static final String EXTRA_MESSAGE = "com.example.android.todohome.TASK";
-    public static final int REQUEST_CODE = 0;
+    private static final int REQUEST_CODE = 0;
     private static final String LOG_TAG = MainActivity.class.getSimpleName() + " TEST";
 
     private TaskList tasks;
     private TaskAdapter taskAdapter;
-    private ListView taskListView;
-//    private int currentPosition;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
         tasks = createTaskList();
 
         // Find a reference to the ListView in the layout
-        taskListView = (ListView) findViewById(R.id.list_view);
+        ListView taskListView = findViewById(R.id.list_view);
 
         // Create an adapter to display task objects in the ListView
         taskAdapter = new TaskAdapter(this, tasks);
@@ -48,7 +43,6 @@ public class MainActivity extends AppCompatActivity {
         taskListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-//                currentPosition = position;
                 Log.d(LOG_TAG, "Click on list item " + taskAdapter.getItem(position));
 
                 // Start the activity that show the details of the
