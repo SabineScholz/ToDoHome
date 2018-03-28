@@ -15,6 +15,7 @@ import com.example.android.todohome.model.TaskList;
 public class MainActivity extends AppCompatActivity {
 
     public static final String EXTRA_MESSAGE = "com.example.android.todohome.TASK";
+    public static final String TASKS_KEY = "com.example.android.todohome.TASKLIST";
     private static final int REQUEST_CODE = 0;
     private static final String LOG_TAG = MainActivity.class.getSimpleName() + " TEST";
 
@@ -27,8 +28,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Create list with fake tasks
-        tasks = createTaskList();
+        // Create list with fake tasks if no old list is available
+        if(savedInstanceState == null) {
+            tasks = createTaskList();
+            Log.d(LOG_TAG, "createTaskList");
+        } else {
+            tasks = (TaskList) savedInstanceState.get(TASKS_KEY);
+            Log.d(LOG_TAG, "load old list");
+        }
 
         // Find a reference to the ListView in the layout
         ListView taskListView = findViewById(R.id.list_view);
@@ -66,6 +73,13 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        Log.d(LOG_TAG, "onSaveInstanceState");
+        outState.putParcelableArrayList(TASKS_KEY, tasks);
+        super.onSaveInstanceState(outState);
     }
 
     /**
@@ -121,5 +135,23 @@ public class MainActivity extends AppCompatActivity {
         tasks.add(new Task("Walk the dog", "[description]", false));
         tasks.add(new Task("Clean the house", "[description]", true));
         return tasks;
+    }
+
+    @Override
+    protected void onStop() {
+        Log.d(LOG_TAG, "onStop");
+        super.onStop();
+    }
+
+    @Override
+    protected void onPause() {
+        Log.d(LOG_TAG, "onPause");
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        Log.d(LOG_TAG, "onResume");
+        super.onResume();
     }
 }
