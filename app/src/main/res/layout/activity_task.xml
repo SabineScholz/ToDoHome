@@ -100,8 +100,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:barrierDirection="right"
-        app:constraint_referenced_ids="label_creation_date_text_view,label_description_text_view,label_task_text_view,label_done_text_view"
-        tools:layout_editor_absoluteX="109dp"
-        tools:layout_editor_absoluteY="8dp" />
+        app:constraint_referenced_ids="label_creation_date_text_view,label_description_text_view,label_task_text_view,label_done_text_view" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/floatingActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"
+        android:clickable="true"
+        android:src="@drawable/ic_done"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@android:drawable/ic_dialog_email" />
 
 </android.support.constraint.ConstraintLayout>

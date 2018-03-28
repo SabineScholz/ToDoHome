@@ -120,7 +120,7 @@ public class Task implements Parcelable {
 
     @Override
     public String toString() {
-        return title;
+        return "Title: " + title + ", Description: " + description + ", done: " + done;
     }
 
     /**

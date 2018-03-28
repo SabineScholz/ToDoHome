@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,9 +46,35 @@ public class TaskAdapter extends ArrayAdapter<Task> {
         TextView titleTextView = convertView.findViewById(R.id.title_text_view);
 
         // Fill the views with data from the current Task object
-        checkBox.setSelected(task.isDone());
+        checkBox.setChecked(task.isDone());
+        Log.d(LOG_TAG, "TEST getView: " + task.isDone() + " checkBox.isSelected: " + checkBox.isChecked());
         titleTextView.setText(task.getTitle());
+
+        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                Log.d(LOG_TAG, "TEST checked changed: " + b);
+            }
+        });
+
+        checkBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d(LOG_TAG, "TEST checkbox clicked");
+                // How to update the task in the array list of the adapter from here? position of
+                // clicked item in list unknown...?
+            }
+        });
 
         return convertView;
     }
+
+    public boolean remove(int position) {
+        if(getItem(position) != null) {
+            remove(getItem(position));
+            return true;
+        }
+        return false;
+    }
+
 }
