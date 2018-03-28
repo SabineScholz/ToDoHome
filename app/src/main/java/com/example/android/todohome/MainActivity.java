@@ -1,6 +1,7 @@
 package com.example.android.todohome;
 
 import android.content.Intent;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -47,9 +48,22 @@ public class MainActivity extends AppCompatActivity {
 
                 // Start the activity that show the details of the
                 // task that was clicked on. Put the task object into the intent.
-                Intent intent = new Intent(getApplicationContext(), TaskActivity.class);
+                Intent intent = new Intent(getApplicationContext(), EditTaskActivity.class);
                 intent.putExtra(EXTRA_MESSAGE, taskAdapter.getItem(position));
                 startActivityForResult(intent, 0);
+            }
+        });
+
+        // Set listener on "add new task" button
+        FloatingActionButton addNewTaskButton = findViewById(R.id.add_new_button);
+        addNewTaskButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d(LOG_TAG, "add new task");
+
+                // Start the activity with which new tasks can be created
+                Intent intent = new Intent(getApplicationContext(), CreateTaskActivity.class);
+                startActivity(intent);
             }
         });
     }

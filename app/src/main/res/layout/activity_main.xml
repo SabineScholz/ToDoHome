@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<android.support.design.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -11,4 +11,9 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:layout_centerInParent="true"/>
-</RelativeLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/add_new_button"
+        style="@style/floating_action_button"
+ />
+</android.support.design.widget.CoordinatorLayout>

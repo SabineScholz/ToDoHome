@@ -16,14 +16,14 @@ import android.widget.EditText;
 
 import com.example.android.todohome.model.Task;
 
-public class TaskActivity extends AppCompatActivity {
+public class EditTaskActivity extends AppCompatActivity {
 
     private Task currentTask;
     private EditText title;
     private EditText description;
     private CheckBox done;
 
-    private static final String LOG_TAG = TaskActivity.class.getSimpleName() + " TEST";
+    private static final String LOG_TAG = EditTaskActivity.class.getSimpleName() + " TEST";
 
     private boolean change_detected;
 
@@ -89,7 +89,7 @@ public class TaskActivity extends AppCompatActivity {
      * Sets up the button with which the user submits the task data
      */
     private void setUpSubmitButton() {
-        FloatingActionButton fab = findViewById(R.id.floatingActionButton);
+        FloatingActionButton fab = findViewById(R.id.save_task_button);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="24dp"
-    tools:context="com.example.android.todohome.TaskActivity">
+    tools:context="com.example.android.todohome.EditTaskActivity">
 
     <TextView
         android:id="@+id/label_task_text_view"
@@ -102,16 +102,9 @@
         app:constraint_referenced_ids="label_creation_date_text_view,label_description_text_view,label_task_text_view,label_done_text_view" />
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/floatingActionButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        android:clickable="true"
-        android:focusable="true"
-        android:src="@drawable/ic_done"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:id="@+id/save_task_button"
+        style="@style/floating_action_button"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@android:drawable/ic_dialog_email" />
+        app:layout_constraintTop_toBottomOf="@+id/done_checkbox" />
 
 </android.support.constraint.ConstraintLayout>
