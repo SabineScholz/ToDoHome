@@ -5,6 +5,9 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -20,8 +23,16 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_CREATE_TASK = 1;
     private static final String LOG_TAG = MainActivity.class.getSimpleName() + " TEST";
 
-    private TaskList tasks;
+    /* sources for filter option
+    https://stackoverflow.com/questions/24769257/custom-listview-adapter-with-filter-android/24771174#24771174
+    https://www.survivingwithandroid.com/2012/10/android-listview-custom-filter.html
+    https://gist.github.com/DeepakRattan/26521c404ffd7071d0a4
+     */
+
+    private TaskList originalTaskList;
+//    private TaskList currentTaskList;
     private TaskAdapter taskAdapter;
+    private ListView taskListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,20 +40,22 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Create list with fake tasks if no old list is available
+        // Create list with fake currentTaskList if no old list is available
         if (savedInstanceState == null) {
-            tasks = createTaskList();
+            originalTaskList = createTaskList();
+//            currentTaskList = (TaskList) originalTaskList.clone();
             Log.d(LOG_TAG, "createTaskList");
         } else {
-            tasks = (TaskList) savedInstanceState.get(TASKS_KEY);
+            originalTaskList = (TaskList) savedInstanceState.get(TASKS_KEY);
+//            currentTaskList = (TaskList) originalTaskList.clone();
             Log.d(LOG_TAG, "load old list");
         }
 
         // Find a reference to the ListView in the layout
-        ListView taskListView = findViewById(R.id.list_view);
+        taskListView = findViewById(R.id.list_view);
 
         // Create an adapter to display task objects in the ListView
-        taskAdapter = new TaskAdapter(this, tasks);
+        taskAdapter = new TaskAdapter(this, originalTaskList);
 
         // Attach adapter to ListView
         taskListView.setAdapter(taskAdapter);
@@ -69,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Log.d(LOG_TAG, "add new task");
 
-                // Start the activity with which new tasks can be created
+                // Start the activity with which new currentTaskList can be created
                 Intent intent = new Intent(getApplicationContext(), CreateTaskActivity.class);
                 startActivityForResult(intent, 1);
             }
@@ -77,9 +90,39 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_item_all_tasks:
+                taskAdapter.getFilter().filter(TaskAdapter.SHOW_ALL);
+                return true;
+            case R.id.menu_item_unfinished_tasks:
+                taskAdapter.getFilter().filter(TaskAdapter.SHOW_UNFINISHED);
+                return true;
+            case R.id.menu_item_delete_finished_tasks:
+                deleteFinishedTasks();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void deleteFinishedTasks() {
+        originalTaskList = originalTaskList.getUnfinishedTasks();
+        taskAdapter = new TaskAdapter(this, originalTaskList);
+        taskListView.setAdapter(taskAdapter);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
     protected void onSaveInstanceState(Bundle outState) {
         Log.d(LOG_TAG, "onSaveInstanceState");
-        outState.putParcelableArrayList(TASKS_KEY, tasks);
+        outState.putParcelableArrayList(TASKS_KEY, originalTaskList);
         super.onSaveInstanceState(outState);
     }
 
@@ -108,16 +151,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Updates an already existing task in the tasks list with the data contained
+     * Updates an already existing task in the currentTaskList list with the data contained
      * in this task.
      * If the task does not exist in the list yet, it is added to the list.
      */
     private void updateOrAddTask(Task task) {
-        if (!tasks.contains(task)) {
-            tasks.add(task);
+        if (!originalTaskList.contains(task)) {
+            originalTaskList.add(task);
             Log.d(LOG_TAG, "added task");
         } else {
-            tasks.update(task);
+            originalTaskList.update(task);
             Log.d(LOG_TAG, "updated existing task");
         }
     }
