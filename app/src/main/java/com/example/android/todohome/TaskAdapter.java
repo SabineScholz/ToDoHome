@@ -3,6 +3,7 @@ package com.example.android.todohome;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,15 +25,15 @@ public class TaskAdapter extends ArrayAdapter<Task> {
     private static final String LOG_TAG = TaskAdapter.class.getSimpleName();
 
 
-
     public TaskAdapter(@NonNull Context context, List<Task> tasks) {
         super(context, 0, tasks);
+//        setNotifyOnChange(true);
     }
 
 
     @NonNull
     @Override
-    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+    public View getView(final int position, @Nullable View convertView, @NonNull ViewGroup parent) {
 
         Task task = getItem(position);
 
@@ -42,7 +43,7 @@ public class TaskAdapter extends ArrayAdapter<Task> {
         }
 
         // Get the Views from the convertView
-        CheckBox checkBox = convertView.findViewById(R.id.checkbox);
+        final CheckBox checkBox = convertView.findViewById(R.id.checkbox);
         TextView titleTextView = convertView.findViewById(R.id.title_text_view);
 
         // Fill the views with data from the current Task object
@@ -53,18 +54,20 @@ public class TaskAdapter extends ArrayAdapter<Task> {
         checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-//                Log.d(LOG_TAG, "TEST checked changed: " + b);
+                getItem(position).setDone(checkBox.isChecked());
+                Log.d(LOG_TAG, "TEST checked changed: " + b);
             }
         });
 
-        checkBox.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-//                Log.d(LOG_TAG, "TEST checkbox clicked");
-                // How to update the task in the array list of the adapter from here? position of
-                // clicked item in list unknown...?
-            }
-        });
+//        checkBox.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                getItem(position).setDone(checkBox.isChecked());
+////                Log.d(LOG_TAG, "TEST checkbox clicked");
+//                // How to update the task in the array list of the adapter from here? position of
+//                // clicked item in list unknown...?
+//            }
+//        });
 
         return convertView;
     }

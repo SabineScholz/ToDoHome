@@ -8,6 +8,8 @@ import android.support.v7.app.AppCompatActivity;
 
 public class EditTaskActivity extends AppCompatActivity {
 
+    private static final String FRAGMENT_TAG = "taskFragment";
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -15,8 +17,21 @@ public class EditTaskActivity extends AppCompatActivity {
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        EditTaskFragment editTaskFragment = new EditTaskFragment();
-        fragmentTransaction.add(R.id.container, editTaskFragment);
+        TaskFragment taskFragment = new TaskFragment();
+        fragmentTransaction.add(R.id.container, taskFragment, FRAGMENT_TAG);
         fragmentTransaction.commit();
+    }
+
+    @Override
+    public void onBackPressed() {
+        TaskFragment taskFragment = (TaskFragment) getSupportFragmentManager().findFragmentByTag(FRAGMENT_TAG);
+        if(taskFragment.hasChanged()) {
+            new WarningDialogFragment().show(getFragmentManager(), "warning");
+        } else {
+            super.onBackPressed();
+        }
+
+        // This does not work: (Dialog disappears automatically...)
+//        taskFragment.warnUser();
     }
 }

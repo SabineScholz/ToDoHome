@@ -20,16 +20,14 @@ import android.widget.EditText;
 import com.example.android.todohome.model.Task;
 
 
-public class EditTaskFragment extends Fragment {
+public class TaskFragment extends Fragment {
 
+    private static final String LOG_TAG = TaskFragment.class.getSimpleName() + " TEST";
     private Task currentTask;
     private EditText title;
     private EditText description;
     private CheckBox done;
     private View rootView;
-
-    private static final String LOG_TAG = EditTaskFragment.class.getSimpleName() + " TEST";
-
     private boolean change_detected;
 
     private TextWatcher textWatcher = new TextWatcher() {
@@ -64,7 +62,7 @@ public class EditTaskFragment extends Fragment {
 
 
         // Check whether the intent contains a task that is to be edited
-        if(intent.hasExtra(MainActivity.TASK_MESSAGE)) {
+        if (intent.hasExtra(MainActivity.TASK_MESSAGE)) {
 
             // Extract the task object that came with the intent
             currentTask = intent.getParcelableExtra(MainActivity.TASK_MESSAGE);
@@ -146,14 +144,19 @@ public class EditTaskFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                if (change_detected) {
-                    new WarningDialogFragment().show(getActivity().getFragmentManager(), "warning");
-                } else {
-                    NavUtils.navigateUpFromSameTask(getActivity());
-                }
+                warnUser();
                 return true;
         }
         return false;
+    }
+
+
+    public void warnUser() {
+        if (change_detected) {
+            new WarningDialogFragment().show(getActivity().getFragmentManager(), "warning");
+        } else {
+            NavUtils.navigateUpFromSameTask(getActivity());
+        }
     }
 
     /**
@@ -169,5 +172,9 @@ public class EditTaskFragment extends Fragment {
                 change_detected = true;
             }
         });
+    }
+
+    public boolean hasChanged() {
+        return change_detected;
     }
 }

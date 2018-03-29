@@ -6,12 +6,13 @@ public class TaskList extends ArrayList<Task> {
 
     /**
      * Returns the task with a given id.
+     *
      * @param id
      * @return
      */
     public Task findTaskById(int id) {
-        for(Task task : this) {
-            if(task.getId() == id) return task;
+        for (Task task : this) {
+            if (task.getId() == id) return task;
         }
         return null;
     }

@@ -1,9 +1,9 @@
 package com.example.android.todohome;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // Create list with fake tasks if no old list is available
-        if(savedInstanceState == null) {
+        if (savedInstanceState == null) {
             tasks = createTaskList();
             Log.d(LOG_TAG, "createTaskList");
         } else {
@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Start the activity with which new tasks can be created
                 Intent intent = new Intent(getApplicationContext(), CreateTaskActivity.class);
-                startActivityForResult(intent, 1 );
+                startActivityForResult(intent, 1);
             }
         });
     }
@@ -92,11 +92,11 @@ public class MainActivity extends AppCompatActivity {
         Log.d(LOG_TAG, "onActivityResult requestCode: " + requestCode + ", resultCode: " + resultCode);
 
         // Make sure that this result corresponds to the request we made and that the request was successful
-        if((requestCode == REQUEST_CODE_EDIT_TASK || requestCode == REQUEST_CODE_CREATE_TASK) && resultCode == RESULT_OK) {
+        if ((requestCode == REQUEST_CODE_EDIT_TASK || requestCode == REQUEST_CODE_CREATE_TASK) && resultCode == RESULT_OK) {
 
             // Extract the task object from the intent
             Task task = intent.getParcelableExtra(TASK_MESSAGE);
-            Log.d(LOG_TAG,"onActivityResult: " + task);
+            Log.d(LOG_TAG, "onActivityResult: " + task);
 
             // Update or add the task
             updateOrAddTask(task);
@@ -113,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
      * If the task does not exist in the list yet, it is added to the list.
      */
     private void updateOrAddTask(Task task) {
-        if(!tasks.contains(task)) {
+        if (!tasks.contains(task)) {
             tasks.add(task);
             Log.d(LOG_TAG, "added task");
         } else {
@@ -124,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Creates list of task objects.
+     *
      * @return TaskList (ArrayList)
      */
     private TaskList createTaskList() {

@@ -16,17 +16,19 @@ public class WarningDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setMessage(R.string.warning_message);
-        builder.setPositiveButton(R.string.cancel, new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 Log.d(LOG_TAG, "cancel");
             }
         });
-        builder.setNegativeButton(R.string.discard_changes, new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.discard_changes, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 Log.d(LOG_TAG, "discard changes");
                 NavUtils.navigateUpFromSameTask(getActivity());
             }
         });
+
+        setCancelable(false);
         return builder.create();
     }
 }
