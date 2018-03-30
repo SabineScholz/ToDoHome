@@ -61,6 +61,7 @@ public class TaskAdapter extends ArrayAdapter<Task> implements Filterable {
         return position;
     }
 
+
     /**
      * TODO add viewHolder
      */

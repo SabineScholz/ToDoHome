@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -30,9 +32,12 @@ public class MainActivity extends AppCompatActivity {
      */
 
     private TaskList originalTaskList;
-//    private TaskList currentTaskList;
     private TaskAdapter taskAdapter;
     private ListView taskListView;
+
+//    private RecyclerView mRecyclerView;
+//    private RecyclerView.Adapter mAdapter;
+//    private RecyclerView.LayoutManager mLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +58,12 @@ public class MainActivity extends AppCompatActivity {
 
         // Find a reference to the ListView in the layout
         taskListView = findViewById(R.id.list_view);
+//        mRecyclerView = (RecyclerView) findViewById(R.id.list_view);
+//        mRecyclerView.setHasFixedSize(true);
+//        mLayoutManager = new LinearLayoutManager(this);
+//        mRecyclerView.setLayoutManager(mLayoutManager);
+//        mAdapter = new RecyclerAdapter(originalTaskList);
+//        mRecyclerView.setAdapter(mAdapter);
 
         // Create an adapter to display task objects in the ListView
         taskAdapter = new TaskAdapter(this, originalTaskList);
