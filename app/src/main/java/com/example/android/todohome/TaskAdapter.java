@@ -33,7 +33,7 @@ public class TaskAdapter extends ArrayAdapter<Task> implements Filterable {
     private TaskList filteredData = null;
     private LayoutInflater inflater;
     private TaskFilter taskFilter = new TaskFilter();
-
+    private String mode;
 
 
     public TaskAdapter(Context context, TaskList tasks) {
@@ -41,17 +41,18 @@ public class TaskAdapter extends ArrayAdapter<Task> implements Filterable {
         this.originalData = tasks;
         this.filteredData = tasks;
         this.inflater = LayoutInflater.from(context);
+        mode = SHOW_ALL;
     }
 
     @Override
     public int getCount() {
-//        Log.d(LOG_TAG, "getCount: " + filteredData.size());
+        Log.d(LOG_TAG, "getCount: " + filteredData.size());
         return filteredData.size();
     }
 
     @Override
     public Task getItem(int position) {
-//        Log.d(LOG_TAG, "getItem: " + position);
+        Log.d(LOG_TAG, "getItem: " + position);
         return filteredData.get(position);
     }
 
@@ -83,11 +84,19 @@ public class TaskAdapter extends ArrayAdapter<Task> implements Filterable {
 //        Log.d(LOG_TAG, "TEST getView: " + task.isDone() + " checkBox.isSelected: " + checkBox.isChecked());
         titleTextView.setText(task.getTitle());
 
-        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+//                getItem(position).setDone(checkBox.isChecked());
+////                Log.d(LOG_TAG, "TEST checked changed: " + b);
+//            }
+//        });
+
+        checkBox.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+            public void onClick(View view) {
                 getItem(position).setDone(checkBox.isChecked());
-//                Log.d(LOG_TAG, "TEST checked changed: " + b);
+//                Log.d(LOG_TAG, "TEST checked changed: ");
             }
         });
 
@@ -99,14 +108,29 @@ public class TaskAdapter extends ArrayAdapter<Task> implements Filterable {
         return taskFilter;
     }
 
+
+    // TODO: what should happen if the user applies the show-unfinished filter and marks a task as done afterwards? let task disappear immediately?
+    public void refreshFilter() {
+        Log.d(LOG_TAG, "refreshFilter()");
+        if(mode.equals(TaskAdapter.SHOW_ALL)) {
+            getFilter().filter(TaskAdapter.SHOW_ALL);
+            Log.d(LOG_TAG, "SHOW_ALL");
+        } else {
+            getFilter().filter(TaskAdapter.SHOW_UNFINISHED);
+            Log.d(LOG_TAG, "SHOW_UNFINISHED");
+        }
+    }
+
     private class TaskFilter extends Filter {
 
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
 
             if (constraint.toString().equals(SHOW_ALL)) {
+                mode = SHOW_ALL;
                 return getAllTasks();
             } else if (constraint.toString().equals(SHOW_UNFINISHED)) {
+                mode = SHOW_UNFINISHED;
                 return getUnfinishedTasks();
             } else {
                 return null;

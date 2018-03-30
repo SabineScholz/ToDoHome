@@ -5,6 +5,7 @@ import android.util.Log;
 import com.example.android.todohome.MainActivity;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class TaskList extends ArrayList<Task> {
 
@@ -44,11 +45,17 @@ public class TaskList extends ArrayList<Task> {
     }
 
     public void deleteFinishedTasks() {
-        for(Task task : this){
-            if(task.isDone()) {
-                remove(task);
+        for (Iterator<Task> iterator = this.iterator(); iterator.hasNext();) {
+            Task task = iterator.next();
+            if (task.isDone()) {
+                iterator.remove();
             }
         }
+        //        for(Task task : this){
+//            if(task.isDone()) {
+//                remove(task); // not allowed (ConcurrentModificationException)
+//            }
+//        }
     }
 
     @Override

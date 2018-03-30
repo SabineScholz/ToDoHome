@@ -107,9 +107,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void deleteFinishedTasks() {
-        originalTaskList = originalTaskList.getUnfinishedTasks();
-        taskAdapter = new TaskAdapter(this, originalTaskList);
-        taskListView.setAdapter(taskAdapter);
+        originalTaskList.deleteFinishedTasks();
+        taskAdapter.notifyDataSetChanged();
+//        originalTaskList = originalTaskList.getUnfinishedTasks();
+//        taskAdapter = new TaskAdapter(this, originalTaskList);
+//        taskListView.setAdapter(taskAdapter);
     }
 
     @Override
@@ -143,9 +145,6 @@ public class MainActivity extends AppCompatActivity {
 
             // Update or add the task
             updateOrAddTask(task);
-
-            // Notify the adapter that its data have changed
-            taskAdapter.notifyDataSetChanged();
         }
         super.onActivityResult(requestCode, resultCode, intent);
     }
@@ -158,9 +157,11 @@ public class MainActivity extends AppCompatActivity {
     private void updateOrAddTask(Task task) {
         if (!originalTaskList.contains(task)) {
             originalTaskList.add(task);
+            taskAdapter.refreshFilter();
             Log.d(LOG_TAG, "added task");
         } else {
             originalTaskList.update(task);
+            taskAdapter.refreshFilter();
             Log.d(LOG_TAG, "updated existing task");
         }
     }
