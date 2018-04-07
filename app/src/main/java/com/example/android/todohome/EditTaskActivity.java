@@ -6,6 +6,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 
+// TODO merge edit and insert task activities, set activity title dynamically depending on uri in intent
 public class EditTaskActivity extends AppCompatActivity {
 
     private static final String FRAGMENT_TAG = "taskFragment";
