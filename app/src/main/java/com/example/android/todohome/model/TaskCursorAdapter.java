@@ -24,9 +24,11 @@ import java.util.Date;
  * Created by Sabine on 27.03.2018.
  */
 
-public class TaskCursorAdapter extends CursorAdapter implements Filterable {
+public class TaskCursorAdapter extends CursorAdapter {
 
     private static final String LOG_TAG = TaskCursorAdapter.class.getSimpleName() + " TEST";
+    public static final CharSequence SHOW_UNFINISHED = "0";
+    public static final CharSequence SHOW_ALL = "1";
     private CheckboxClickListener checkboxClickListener;
 
     public TaskCursorAdapter(Context context, Cursor c, CheckboxClickListener checkboxClickListener) {
@@ -34,11 +36,6 @@ public class TaskCursorAdapter extends CursorAdapter implements Filterable {
         this.checkboxClickListener = checkboxClickListener;
         Log.d(LOG_TAG, "TaskCursorAdapter()");
     }
-
-
-//    public static final String SHOW_ALL = "1";
-//    public static final String SHOW_UNFINISHED = "2";
-
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
@@ -53,8 +50,6 @@ public class TaskCursorAdapter extends CursorAdapter implements Filterable {
         // Store the view holder as a tag of the row view
         // If the row view is to be reused, be can access its view holder using this tag (see bindView())
         view.setTag(taskViewHolder);
-
-
         view.setTag(R.id.TAG_TASK_ID, parent.getId());
 
         return view;
@@ -122,65 +117,4 @@ public class TaskCursorAdapter extends CursorAdapter implements Filterable {
             }
         }
     }
-
-//    @Override
-//    public Filter getFilter() {
-//        return taskFilter;
-//    }
-
-
-//
-//    public void refreshFilter() {
-//        Log.d(LOG_TAG, "refreshFilter()");
-//        if(mode.equals(TaskCursorAdapter.SHOW_ALL)) {
-//            getFilter().filter(TaskCursorAdapter.SHOW_ALL);
-//            Log.d(LOG_TAG, "SHOW_ALL");
-//        } else {
-//            getFilter().filter(TaskCursorAdapter.SHOW_UNFINISHED);
-//            Log.d(LOG_TAG, "SHOW_UNFINISHED");
-//        }
-//    }
-
-//    private class TaskFilter extends Filter {
-//
-//        @Override
-//        protected FilterResults performFiltering(CharSequence constraint) {
-//
-//            if (constraint.toString().equals(SHOW_ALL)) {
-//                mode = SHOW_ALL;
-//                return getAllTasks();
-//            } else if (constraint.toString().equals(SHOW_UNFINISHED)) {
-//                mode = SHOW_UNFINISHED;
-//                return getUnfinishedTasks();
-//            } else {
-//                return null;
-//            }
-//        }
-//
-//        private FilterResults getUnfinishedTasks() {
-//            FilterResults results = new FilterResults();
-//            TaskList unfinishedTasks = new TaskList();
-//            for (Task task : originalData) {
-//                if (!task.isDone()) {
-//                    unfinishedTasks.add(task);
-//                }
-//            }
-//            results.values = unfinishedTasks;
-//            results.count = unfinishedTasks.size();
-//            return results;
-//        }
-//
-//        private FilterResults getAllTasks() {
-//            FilterResults results = new FilterResults();
-//            results.values = originalData;
-//            results.count = originalData.size();
-//            return results;
-//        }
-//
-//        @Override
-//        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-//            filteredData = (TaskList) filterResults.values;
-//            notifyDataSetChanged();
-//        }
-//    }
 }

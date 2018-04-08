@@ -289,7 +289,6 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
             doneCheckBox.setChecked(false);
         }
         descriptionEditText.setText(description);
-
         creationDateTextView.setText(formatDate(creationDate));
     }
 

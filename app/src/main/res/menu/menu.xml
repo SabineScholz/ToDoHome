@@ -12,4 +12,7 @@
     <item
         android:id="@+id/menu_item_delete_finished_tasks"
         android:title="@string/delete_finished_tasks" />
+    <item
+        android:id="@+id/menu_item_delete_all_tasks"
+        android:title="@string/delete_all_tasks" />
 </menu>

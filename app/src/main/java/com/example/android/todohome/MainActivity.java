@@ -17,6 +17,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.FilterQueryProvider;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -27,31 +28,25 @@ import com.example.android.todohome.model.TaskCursorAdapter;
 // TODO back and up button dialogs
 // TODO creation date show date only
 // TODO delete single tasks
-// TODO delete all tasks
-// TODO delete unfinished tasks
 // TODO filtering, show unfinished tasks only
 // TODO save button editorActivity
 // TODO dont show "task updated" when no changes have taken place
 // TODO what should happen if the user applies the show-unfinished filter and marks a task as done afterwards? let task disappear immediately?
 // TODO add due date
-
-public class MainActivity extends AppCompatActivity implements TaskCursorAdapter.CheckboxClickListener, LoaderManager.LoaderCallbacks<Cursor> {
-
-    public static final String TASK_MESSAGE = "com.example.android.todohome.TASK";
-    public static final String TASKS_KEY = "com.example.android.todohome.TASKLIST";
-    public static final int LOADER_ID = 0;
-
-    private static final int REQUEST_CODE_EDIT_TASK = 0;
-    private static final int REQUEST_CODE_CREATE_TASK = 1;
-
-    // Tag for log messages
-    private static final String LOG_TAG = MainActivity.class.getSimpleName() + " TEST";
-
     /* sources for filter option
     https://stackoverflow.com/questions/24769257/custom-listview-adapter-with-filter-android/24771174#24771174
     https://www.survivingwithandroid.com/2012/10/android-listview-custom-filter.html
     https://gist.github.com/DeepakRattan/26521c404ffd7071d0a4
      */
+
+public class MainActivity extends AppCompatActivity implements TaskCursorAdapter.CheckboxClickListener, LoaderManager.LoaderCallbacks<Cursor> {
+
+    // Tag for log messages
+    private static final String LOG_TAG = MainActivity.class.getSimpleName() + " TEST";
+
+    // ID of the loader that fetches the data for the listview
+    public static final int LOADER_ID = 0;
+
 
     private TaskCursorAdapter taskCursorAdapter;
     private ListView taskListView;
@@ -77,6 +72,20 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
 
         // Initialize loader that fetches data from the database
         getLoaderManager().initLoader(LOADER_ID, null, this);
+
+        taskCursorAdapter.setFilterQueryProvider(new FilterQueryProvider() {
+            @Override
+            public Cursor runQuery(CharSequence constraint) {
+                Log.d(LOG_TAG, "Filter");
+                if(constraint == TaskCursorAdapter.SHOW_UNFINISHED) {
+                    String selection = TaskContract.TaskEntry.COLUMN_TASK_DONE + " = ?";
+                    String[] selectionArgs = new String[]{String.valueOf(TaskContract.TaskEntry.DONE_NO)};
+                    return getContentResolver().query(TaskContract.TaskEntry.CONTENT_URI, null, selection, selectionArgs, null);
+                } else {
+                    return getContentResolver().query(TaskContract.TaskEntry.CONTENT_URI, null, null,  null, null);
+                }
+            }
+        });
 
 
         // Set a click listener on the listview that is triggered when
@@ -110,24 +119,33 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_item_insert_dummy_data:
                 insertDummyData();
             case R.id.menu_item_all_tasks:
-//                taskCursorAdapter.getFilter().filter(TaskCursorAdapter.SHOW_ALL);
+                taskCursorAdapter.getFilter().filter(TaskCursorAdapter.SHOW_ALL);
                 return true;
             case R.id.menu_item_unfinished_tasks:
-//                taskCursorAdapter.getFilter().filter(TaskCursorAdapter.SHOW_UNFINISHED);
+                taskCursorAdapter.getFilter().filter(TaskCursorAdapter.SHOW_UNFINISHED);
                 return true;
             case R.id.menu_item_delete_finished_tasks:
                 deleteFinishedTasks();
                 return true;
+            case R.id.menu_item_delete_all_tasks:
+                deleteAllTasks();
+               return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
-
 
     /**
      * Insert dummy data (only for debugging)
@@ -162,6 +180,14 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
         getContentResolver().insert(TaskContract.TaskEntry.CONTENT_URI, contentValues);
     }
 
+
+    private void deleteAllTasks() {
+        Log.d(LOG_TAG, "deleteAllTasks()");
+        int deletedRows = getContentResolver().delete(TaskContract.TaskEntry.CONTENT_URI, null, null);
+        Log.d(LOG_TAG, "deletedRows: " + deletedRows);
+    }
+
+
     private void deleteFinishedTasks() {
         Log.d(LOG_TAG, "deleteFinishedTasks()");
         String selection = TaskContract.TaskEntry.COLUMN_TASK_DONE + " = ?";
@@ -170,12 +196,7 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
         Log.d(LOG_TAG, "deletedRows: " + deletedRows);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu, menu);
-        return true;
-    }
+
 
     @Override
     protected void onStop() {
