@@ -6,9 +6,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.CursorAdapter;
 import android.widget.Filterable;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.android.todohome.R;
@@ -25,7 +27,6 @@ import java.util.Date;
 public class TaskCursorAdapter extends CursorAdapter implements Filterable {
 
     private static final String LOG_TAG = TaskCursorAdapter.class.getSimpleName() + " TEST";
-
     private CheckboxClickListener checkboxClickListener;
 
     public TaskCursorAdapter(Context context, Cursor c, CheckboxClickListener checkboxClickListener) {
@@ -53,6 +54,9 @@ public class TaskCursorAdapter extends CursorAdapter implements Filterable {
         // If the row view is to be reused, be can access its view holder using this tag (see bindView())
         view.setTag(taskViewHolder);
 
+
+        view.setTag(R.id.TAG_TASK_ID, parent.getId());
+
         return view;
     }
 
@@ -61,8 +65,6 @@ public class TaskCursorAdapter extends CursorAdapter implements Filterable {
      */
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
-//        Log.d(LOG_TAG, "bindView");
-
         // Retrieve view holder from row view
         TaskViewHolder taskViewHolder = (TaskViewHolder) view.getTag();
 
@@ -71,21 +73,13 @@ public class TaskCursorAdapter extends CursorAdapter implements Filterable {
         taskViewHolder.bind(cursor);
     }
 
-    private String formatTime(Calendar date) {
-        SimpleDateFormat sdf = new SimpleDateFormat();
-        return sdf.format(date.getTime());
-    }
-
-    private String formatDate(Date date) {
-        return DateFormat.getDateInstance().format(date);
-    }
-
 
     public interface CheckboxClickListener {
-        void onCheckboxClick(int clickedItemIndex);
+        void onCheckboxClick(long clickedItemIndex, boolean taskDone);
     }
 
-    private class TaskViewHolder implements View.OnClickListener {
+
+    private class TaskViewHolder {
 
         private TextView nameTextView;
         private CheckBox checkBox;
@@ -96,7 +90,17 @@ public class TaskCursorAdapter extends CursorAdapter implements Filterable {
             // Find sub views of the row view
             nameTextView = itemView.findViewById(R.id.name_text_view);
             checkBox = itemView.findViewById(R.id.checkbox);
-//            checkBox.setOnClickListener(this);
+            checkBox.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    View parentRow = (View) view.getParent();
+                    ListView listView = (ListView) parentRow.getParent();
+                    int position = listView.getPositionForView(parentRow);
+                    long id = listView.getItemIdAtPosition(position);
+                    CheckBox checkBox = (CheckBox) view;
+                    checkboxClickListener.onCheckboxClick(id, checkBox.isChecked());
+                }
+            });
         }
 
         public void bind(Cursor cursor) {
@@ -116,12 +120,6 @@ public class TaskCursorAdapter extends CursorAdapter implements Filterable {
             } else {
                 checkBox.setChecked(false);
             }
-            checkBox.setTag(cursor.getPosition());
-        }
-
-        @Override
-        public void onClick(View view) {
-            checkboxClickListener.onCheckboxClick((int) view.getTag());
         }
     }
 

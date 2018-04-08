@@ -30,6 +30,7 @@ import com.example.android.todohome.model.TaskContract;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 
 public class EditorFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -90,14 +91,11 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
             Log.d(LOG_TAG, "insert mode");
 
             // set the nameEditText of the activity to reflect that we are in insert mode
-            getActivity().setTitle(R.id.editor_activity_title_new_task);
+            getActivity().setTitle(R.string.editor_activity_title_new_task);
 
             // display the current date in the creation date task view
             currentTime = System.currentTimeMillis();
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(currentTime);
-            DateFormat formatter = new SimpleDateFormat();
-            creationDateTextView.setText(formatter.format(calendar.getTime()));
+            creationDateTextView.setText(formatDate(currentTime));
 
             // Invalidate the options menu, so the "Delete" menu option can be hidden.
             // (It doesn't make sense to delete a task that hasn't been created yet.)
@@ -122,6 +120,14 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
 
         return rootView;
     }
+
+    private String formatDate(long currentTime) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(currentTime);
+        DateFormat formatter = DateFormat.getDateInstance();
+        return formatter.format(calendar.getTime());
+    }
+
 
     /**
      * Sets up the button with which the user submits the task data
@@ -179,6 +185,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
             // edit mode
 
             // Update the existing task
+            Log.d(LOG_TAG, "updated uri: " + currentTaskUri);
             int updatedRows = getContext().getContentResolver().update(currentTaskUri, values, null, null);
 
             // Show a toast message depending on whether or not the update was successful
@@ -283,11 +290,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         }
         descriptionEditText.setText(description);
 
-        Calendar calendar = Calendar.getInstance();
-        Log.d(LOG_TAG, "onLoadFinished, creationDate " + creationDate);
-        calendar.setTimeInMillis(creationDate);
-        DateFormat formatter = new SimpleDateFormat();
-        creationDateTextView.setText(formatter.format(calendar.getTime()));
+        creationDateTextView.setText(formatDate(creationDate));
     }
 
     @Override

@@ -25,10 +25,7 @@ import com.example.android.todohome.model.TaskCursorAdapter;
 
 
 // TODO back and up button dialogs
-// TODO list view done button listener
 // TODO creation date show date only
-// TODO add due date
-// TODO empty list screen
 // TODO delete single tasks
 // TODO delete all tasks
 // TODO delete unfinished tasks
@@ -36,6 +33,7 @@ import com.example.android.todohome.model.TaskCursorAdapter;
 // TODO save button editorActivity
 // TODO dont show "task updated" when no changes have taken place
 // TODO what should happen if the user applies the show-unfinished filter and marks a task as done afterwards? let task disappear immediately?
+// TODO add due date
 
 public class MainActivity extends AppCompatActivity implements TaskCursorAdapter.CheckboxClickListener, LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -73,6 +71,10 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
         // Attach adapter to ListView
         taskListView.setAdapter(taskCursorAdapter);
 
+        // Find and set empty view on the ListView, so that it only shows when the list has 0 items.
+        View emptyView = findViewById(R.id.empty_view);
+        taskListView.setEmptyView(emptyView);
+
         // Initialize loader that fetches data from the database
         getLoaderManager().initLoader(LOADER_ID, null, this);
 
@@ -82,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
         taskListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                Log.d(LOG_TAG, "Click on list item " + taskCursorAdapter.getItem(position));
+                Log.d(LOG_TAG, "Click on list item with id " + id);
 
                 // Start the activity that show the details of the
                 // task that was clicked on. Add the task uri to the intent.
@@ -161,6 +163,11 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
     }
 
     private void deleteFinishedTasks() {
+        Log.d(LOG_TAG, "deleteFinishedTasks()");
+        String selection = TaskContract.TaskEntry.COLUMN_TASK_DONE + " = ?";
+        String[] selectionArgs = new String[]{String.valueOf(TaskContract.TaskEntry.DONE_YES)};
+        int deletedRows = getContentResolver().delete(TaskContract.TaskEntry.CONTENT_URI, selection, selectionArgs);
+        Log.d(LOG_TAG, "deletedRows: " + deletedRows);
     }
 
     @Override
@@ -188,10 +195,31 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
         super.onResume();
     }
 
+    /**
+     * Is called when the "done"-checkbox is clicked in the list view. Updates the task in
+     * the database accordingly.
+     */
     @Override
-    public void onCheckboxClick(int clickedItemIndex) {
-        Toast.makeText(getApplicationContext(), "Item # " + clickedItemIndex + " clicked", Toast.LENGTH_SHORT).show();
-//        getContentResolver().update();
+    public void onCheckboxClick(long clickedTaskIndex, boolean taskDone) {
+        Log.d(LOG_TAG, "onCheckboxClick, task index: " + clickedTaskIndex);
+        Uri uri = ContentUris.withAppendedId(TaskContract.TaskEntry.CONTENT_URI, clickedTaskIndex);
+        ContentValues contentValues = new ContentValues();
+        if(taskDone) {
+            contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_DONE, TaskContract.TaskEntry.DONE_YES);
+        } else {
+            contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_DONE, TaskContract.TaskEntry.DONE_NO);
+        }
+        Log.d(LOG_TAG, "updated uri: " + uri);
+        int updatedRows = getContentResolver().update(uri, contentValues, null, null);
+
+        // Show a toast message depending on whether or not the update was successful
+        if (updatedRows == 0) {
+            // If the new content URI is null, then there was an error with update.
+            Toast.makeText(this,getString(R.string.editor_update_task_failed), Toast.LENGTH_SHORT).show();
+        } else {
+            // Otherwise, the update was successful and we can display a toast.
+            Toast.makeText(this, getString(R.string.editor_update_task_successful), Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
