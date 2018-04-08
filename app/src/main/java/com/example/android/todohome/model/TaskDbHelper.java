@@ -17,11 +17,11 @@ public class TaskDbHelper extends SQLiteOpenHelper {
 
     private static final String SQL_CREATE_DATABASE =
             "CREATE TABLE " + TaskContract.TaskEntry.TABLE_NAME + " ( " +
-                    TaskContract.TaskEntry._ID + "INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    TaskContract.TaskEntry.COLUMN_TASK_TITLE + " TEXT NOT NULL, " +
+                    TaskContract.TaskEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    TaskContract.TaskEntry.COLUMN_TASK_NAME + " TEXT NOT NULL, " +
                     TaskContract.TaskEntry.COLUMN_TASK_DESCRIPTION + " TEXT, " +
                     TaskContract.TaskEntry.COLUMN_TASK_CREATION_DATE + " BIGINT NOT NULL, " +
-                    TaskContract.TaskEntry.COLUMN_TASK_DONE + "INTEGER NOT NULL);";
+                    TaskContract.TaskEntry.COLUMN_TASK_DONE + " INTEGER NOT NULL);";
 
     public TaskDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

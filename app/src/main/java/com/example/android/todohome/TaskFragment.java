@@ -90,7 +90,7 @@ public class TaskFragment extends Fragment {
      * Fills the views with data from the task
      */
     private void setDataInViews() {
-        title.setText(currentTask.getTitle());
+        title.setText(currentTask.getName());
         description.setText(currentTask.getDescription());
         done.setChecked(currentTask.isDone());
     }
@@ -123,7 +123,7 @@ public class TaskFragment extends Fragment {
     public void sendTaskBack() {
 
         // Update task object with UI data
-        currentTask.setTitle(title.getText().toString());
+        currentTask.setName(title.getText().toString());
         currentTask.setDescription(description.getText().toString());
         currentTask.setDone(done.isChecked());
 

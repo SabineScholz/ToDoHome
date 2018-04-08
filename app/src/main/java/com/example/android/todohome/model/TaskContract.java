@@ -20,7 +20,7 @@ public final class TaskContract {
     /**
      * Inner class that defines the constant values for the tasks table
      */
-    public static class TaskEntry implements BaseColumns {
+    public static abstract class TaskEntry implements BaseColumns {
 
         // Content uri to access the tasks
         public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_TASKS);
@@ -38,7 +38,7 @@ public final class TaskContract {
 
         // column names
         public static final String _ID = BaseColumns._ID;
-        public static final String COLUMN_TASK_TITLE = "title";
+        public static final String COLUMN_TASK_NAME = "name";
         public static final String COLUMN_TASK_DESCRIPTION = "description";
         public static final String COLUMN_TASK_CREATION_DATE = "creation_date";
         public static final String COLUMN_TASK_DONE = "done";

@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.Log;
 
 import static com.example.android.todohome.model.TaskContract.CONTENT_AUTHORITY;
@@ -115,6 +116,7 @@ public class TaskProvider extends ContentProvider {
 
     /**
      * Insert a new task with the given content values into the tasks table.
+     *
      * @param uri
      * @param contentValues
      * @return Uri of the inserted task.
@@ -133,7 +135,7 @@ public class TaskProvider extends ContentProvider {
 
     private Uri insertTask(Uri uri, ContentValues contentValues) {
 
-        // TODO sanity check (?)
+        sanityCheckBeforeInsert(contentValues);
 
         // Get a writable database
         SQLiteDatabase db = taskDbHelper.getWritableDatabase();
@@ -142,8 +144,8 @@ public class TaskProvider extends ContentProvider {
         long newTaskId = db.insert(TaskContract.TaskEntry.TABLE_NAME, null, contentValues);
 
         // Check whether the insertion was successful
-        if(newTaskId == -1) {
-            Log.e(LOG_TAG,  "Failed to insert row for " + uri);
+        if (newTaskId == -1) {
+            Log.e(LOG_TAG, "Failed to insert row for " + uri);
             return null;
         }
 
@@ -156,6 +158,7 @@ public class TaskProvider extends ContentProvider {
 
     /**
      * Delete tasks matching the selection.
+     *
      * @param uri
      * @param selection
      * @param selectionArgs
@@ -179,7 +182,7 @@ public class TaskProvider extends ContentProvider {
             case TASK_ID:
                 // Delete a single task given by the id in the uri
                 selection = TaskContract.TaskEntry._ID + " = ?";
-                selectionArgs = new String[] {String.valueOf(ContentUris.parseId(uri))};
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
                 rowsDeleted = db.delete(TaskContract.TaskEntry.TABLE_NAME, selection, selectionArgs);
                 break;
             default:
@@ -188,7 +191,7 @@ public class TaskProvider extends ContentProvider {
 
         // If 1 or more rows were deleted, then notify all listeners that the data at the
         // given uri has changed
-        if(rowsDeleted > 0 ){
+        if (rowsDeleted > 0) {
             getContext().getContentResolver().notifyChange(uri, null);
         }
 
@@ -198,6 +201,7 @@ public class TaskProvider extends ContentProvider {
 
     /**
      * Update tasks with the given content values, matching the selection.
+     *
      * @param uri
      * @param contentValues
      * @param selection
@@ -214,7 +218,7 @@ public class TaskProvider extends ContentProvider {
             case TASK_ID:
                 // Update a single task given by the id in the uri
                 selection = TaskContract.TaskEntry._ID + " = ?";
-                selectionArgs = new String[] {String.valueOf(ContentUris.parseId(uri))};
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
                 return updateTask(uri, contentValues, selection, selectionArgs);
             default:
                 throw new IllegalArgumentException("Update is not supported for " + uri);
@@ -228,7 +232,7 @@ public class TaskProvider extends ContentProvider {
             return 0;
         }
 
-        // TODO sanitycheck
+        sanityCheckBeforeUpdate(contentValues);
 
         // Get a writable database
         SQLiteDatabase db = taskDbHelper.getWritableDatabase();
@@ -243,5 +247,58 @@ public class TaskProvider extends ContentProvider {
         }
 
         return rowsUpdated;
+    }
+
+
+    private void sanityCheckBeforeInsert(ContentValues contentValues) {
+
+        // Check that the name is not null
+        String name = contentValues.getAsString(TaskContract.TaskEntry.COLUMN_TASK_NAME);
+        if (TextUtils.isEmpty(name)) {
+            throw new IllegalArgumentException("Task requires a name");
+        }
+
+        // The task description does not need to be checked.
+
+        // Check whether the creation date is not null
+        long date = contentValues.getAsLong(TaskContract.TaskEntry.COLUMN_TASK_CREATION_DATE);
+        if (date < 1) {
+            throw new IllegalArgumentException("Task requires a creation date");
+        }
+
+        // Check whether the value for "done" is valid
+        Integer done = contentValues.getAsInteger(TaskContract.TaskEntry.COLUMN_TASK_DONE);
+        if (done == null || !TaskContract.TaskEntry.isValidDoneValue(done)) {
+            throw new IllegalArgumentException("Task requires a valid value for 'done'");
+        }
+    }
+
+    private void sanityCheckBeforeUpdate(ContentValues contentValues) {
+
+        // Check that the name is not null
+        if (contentValues.containsKey(TaskContract.TaskEntry.COLUMN_TASK_NAME)) {
+            String name = contentValues.getAsString(TaskContract.TaskEntry.COLUMN_TASK_NAME);
+            if (TextUtils.isEmpty(name)) {
+                throw new IllegalArgumentException("Task requires a name");
+            }
+        }
+
+        // The task description does not need to be checked.
+
+        // Check whether the creation date is not null
+        if (contentValues.containsKey(TaskContract.TaskEntry.COLUMN_TASK_CREATION_DATE)) {
+            long date = contentValues.getAsLong(TaskContract.TaskEntry.COLUMN_TASK_CREATION_DATE);
+            if (date < 1) {
+                throw new IllegalArgumentException("Task requires a creation date");
+            }
+        }
+
+        // Check whether the value for "done" is valid
+        if (contentValues.containsKey(TaskContract.TaskEntry.COLUMN_TASK_DONE)) {
+            Integer done = contentValues.getAsInteger(TaskContract.TaskEntry.COLUMN_TASK_DONE);
+            if (done == null || !TaskContract.TaskEntry.isValidDoneValue(done)) {
+                throw new IllegalArgumentException("Task requires a valid value for 'done'");
+            }
+        }
     }
 }

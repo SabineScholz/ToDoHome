@@ -13,7 +13,7 @@
         android:paddingLeft="16dp"/>
 
     <TextView
-        android:id="@+id/title_text_view"
+        android:id="@+id/name_text_view"
         android:layout_width="match_parent"
         android:layout_height="@dimen/list_item_height"
         android:textSize="@dimen/default_text_size"

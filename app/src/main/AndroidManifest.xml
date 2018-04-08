@@ -37,6 +37,10 @@
                 android:value="com.example.android.todohome.MainActivity" />
 
         </activity>
+        <provider
+            android:name=".model.TaskProvider"
+            android:authorities="com.example.android.tasks"
+            android:exported="false" />
     </application>
 
 </manifest>

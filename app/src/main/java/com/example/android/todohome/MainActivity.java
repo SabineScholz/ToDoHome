@@ -1,6 +1,11 @@
 package com.example.android.todohome;
 
+import android.app.LoaderManager;
+import android.content.ContentValues;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -11,15 +16,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
-import com.example.android.todohome.model.Task;
-import com.example.android.todohome.model.TaskAdapter;
-import com.example.android.todohome.model.TaskList;
+import com.example.android.todohome.model.TaskCursorAdapter;
+import com.example.android.todohome.model.TaskContract;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements TaskCursorAdapter.CheckboxClickListener, LoaderManager.LoaderCallbacks<Cursor> {
 
     public static final String TASK_MESSAGE = "com.example.android.todohome.TASK";
     public static final String TASKS_KEY = "com.example.android.todohome.TASKLIST";
+    public static final int LOADER_ID = 0;
+
     private static final int REQUEST_CODE_EDIT_TASK = 0;
     private static final int REQUEST_CODE_CREATE_TASK = 1;
 
@@ -32,8 +39,7 @@ public class MainActivity extends AppCompatActivity {
     https://gist.github.com/DeepakRattan/26521c404ffd7071d0a4
      */
 
-    private TaskList originalTaskList;
-    private TaskAdapter taskAdapter;
+    private TaskCursorAdapter taskCursorAdapter;
     private ListView taskListView;
 
     @Override
@@ -42,36 +48,31 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Create list with fake currentTaskList if no old list is available
-        if (savedInstanceState == null) {
-            originalTaskList = createTaskList();
-            Log.d(LOG_TAG, "createTaskList");
-        } else {
-            originalTaskList = (TaskList) savedInstanceState.get(TASKS_KEY);
-            Log.d(LOG_TAG, "load old list");
-        }
-
         // Find a reference to the ListView in the layout
         taskListView = findViewById(R.id.list_view);
 
         // Create an adapter to display task objects in the ListView
-        taskAdapter = new TaskAdapter(this, originalTaskList);
+        taskCursorAdapter = new TaskCursorAdapter(this, null, this);
 
         // Attach adapter to ListView
-        taskListView.setAdapter(taskAdapter);
+        taskListView.setAdapter(taskCursorAdapter);
+
+        // Initialize loader that fetches data from the database
+        getLoaderManager().initLoader(LOADER_ID, null, this);
+
 
         // Set a click listener on the listview that is triggered when
         // someone clicks on an item in the list
         taskListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                Log.d(LOG_TAG, "Click on list item " + taskAdapter.getItem(position));
+                Log.d(LOG_TAG, "Click on list item " + taskCursorAdapter.getItem(position));
 
                 // Start the activity that show the details of the
                 // task that was clicked on. Put the task object into the intent.
                 Intent intent = new Intent(getApplicationContext(), EditTaskActivity.class);
                 // TODO send URI only, not the task itself
-                intent.putExtra(TASK_MESSAGE, taskAdapter.getItem(position));
+//                intent.putExtra(TASK_MESSAGE, taskCursorAdapter.getItem(position));
                 startActivityForResult(intent, REQUEST_CODE_CREATE_TASK);
             }
         });
@@ -93,11 +94,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.menu_item_insert_dummy_data:
+                insertDummyData();
             case R.id.menu_item_all_tasks:
-                taskAdapter.getFilter().filter(TaskAdapter.SHOW_ALL);
+//                taskCursorAdapter.getFilter().filter(TaskCursorAdapter.SHOW_ALL);
                 return true;
             case R.id.menu_item_unfinished_tasks:
-                taskAdapter.getFilter().filter(TaskAdapter.SHOW_UNFINISHED);
+//                taskCursorAdapter.getFilter().filter(TaskCursorAdapter.SHOW_UNFINISHED);
                 return true;
             case R.id.menu_item_delete_finished_tasks:
                 deleteFinishedTasks();
@@ -107,12 +110,42 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+    /**
+     * Insert dummy data (only for debugging)
+     */
+    public void insertDummyData() {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_NAME, "Groceries");
+        contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_DESCRIPTION, "Doing groceries for the weekend");
+        contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_DONE, TaskContract.TaskEntry.DONE_NO);
+        contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_CREATION_DATE, System.currentTimeMillis());
+        getContentResolver().insert(TaskContract.TaskEntry.CONTENT_URI, contentValues);
+
+        contentValues = new ContentValues();
+        contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_NAME, "Empty the trash");
+        contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_DESCRIPTION, "Empty the trash in each room");
+        contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_DONE, TaskContract.TaskEntry.DONE_YES);
+        contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_CREATION_DATE, System.currentTimeMillis());
+        getContentResolver().insert(TaskContract.TaskEntry.CONTENT_URI, contentValues);
+
+        contentValues = new ContentValues();
+        contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_NAME, "Walk the dog");
+        contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_DESCRIPTION, "Walk the dog for 1 hour");
+        contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_DONE, TaskContract.TaskEntry.DONE_NO);
+        contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_CREATION_DATE, System.currentTimeMillis());
+        getContentResolver().insert(TaskContract.TaskEntry.CONTENT_URI, contentValues);
+
+        contentValues = new ContentValues();
+        contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_NAME, "Clean the house");
+        contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_DESCRIPTION, "Clean the house properly");
+        contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_DONE, TaskContract.TaskEntry.DONE_NO);
+        contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_CREATION_DATE, System.currentTimeMillis());
+        getContentResolver().insert(TaskContract.TaskEntry.CONTENT_URI, contentValues);
+    }
+
     private void deleteFinishedTasks() {
-        originalTaskList.deleteFinishedTasks();
-        taskAdapter.notifyDataSetChanged();
-//        originalTaskList = originalTaskList.getUnfinishedTasks();
-//        taskAdapter = new TaskAdapter(this, originalTaskList);
-//        taskListView.setAdapter(taskAdapter);
+        // TODO
     }
 
     @Override
@@ -120,69 +153,6 @@ public class MainActivity extends AppCompatActivity {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu, menu);
         return true;
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        Log.d(LOG_TAG, "onSaveInstanceState");
-        // TODO remove, load data from provider / loadeer instead
-        outState.putParcelableArrayList(TASKS_KEY, originalTaskList);
-        super.onSaveInstanceState(outState);
-    }
-
-    /**
-     * This function is called when the child activity this activity started
-     * has finished and returns its result.
-     */
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        // TODO remove (child activity saves data in database)
-        Log.d(LOG_TAG, "onActivityResult requestCode: " + requestCode + ", resultCode: " + resultCode);
-
-        // Make sure that this result corresponds to the request we made and that the request was successful
-        if ((requestCode == REQUEST_CODE_EDIT_TASK || requestCode == REQUEST_CODE_CREATE_TASK) && resultCode == RESULT_OK) {
-
-            // Extract the task object from the intent
-            Task task = intent.getParcelableExtra(TASK_MESSAGE);
-            Log.d(LOG_TAG, "onActivityResult: " + task);
-
-            // Update or add the task
-            updateOrAddTask(task);
-        }
-        super.onActivityResult(requestCode, resultCode, intent);
-    }
-
-    /**
-     * Updates an already existing task in the currentTaskList list with the data contained
-     * in this task.
-     * If the task does not exist in the list yet, it is added to the list.
-     * TODO remove
-     */
-    private void updateOrAddTask(Task task) {
-        if (!originalTaskList.contains(task)) {
-            originalTaskList.add(task);
-            taskAdapter.refreshFilter();
-            Log.d(LOG_TAG, "added task");
-        } else {
-            originalTaskList.update(task);
-            taskAdapter.refreshFilter();
-            Log.d(LOG_TAG, "updated existing task");
-        }
-    }
-
-    /**
-     * Creates list of task objects.
-     *
-     * @return TaskList (ArrayList)
-     * TODO save dummy data in database
-     */
-    private TaskList createTaskList() {
-        TaskList tasks = new TaskList();
-        tasks.add(new Task("Groceries", "Doing groceries (bananas)", false));
-        tasks.add(new Task("Empty the trash", "[description]", true));
-        tasks.add(new Task("Walk the dog", "[description]", false));
-        tasks.add(new Task("Clean the house", "[description]", true));
-        return tasks;
     }
 
     @Override
@@ -201,5 +171,38 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         Log.d(LOG_TAG, "onResume");
         super.onResume();
+    }
+
+    @Override
+    public void onCheckboxClick(int clickedItemIndex) {
+        Toast.makeText(getApplicationContext(), "Item # " + clickedItemIndex + " clicked", Toast.LENGTH_SHORT).show();
+        // TODO update task (set to done/undone)
+//        getContentResolver().update();
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int loader_id, Bundle bundle) {
+        Log.d(LOG_TAG, "onCreateLoader");
+
+        switch (loader_id) {
+            case LOADER_ID:
+                // Return cursor loader that queries the task provider for the entire task table (no projection or selection)
+                return new CursorLoader(getApplicationContext(), TaskContract.TaskEntry.CONTENT_URI, null, null, null, null);
+            default:
+                return null;
+        }
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        Log.d(LOG_TAG, "onLoadFinished");
+        // update the adapter with the cursor containing updated task data
+        taskCursorAdapter.changeCursor(cursor);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        Log.d(LOG_TAG, "onLoaderReset");
+        taskCursorAdapter.changeCursor(null);
     }
 }

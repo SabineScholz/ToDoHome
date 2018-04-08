@@ -29,7 +29,7 @@ public class Task implements Parcelable {
     private static int MAX_ID = 0;
 
     private int id;
-    private String title;
+    private String name;
     private String description;
     private Date creationDate;
     private Date dueDate;
@@ -40,38 +40,38 @@ public class Task implements Parcelable {
         this.id = MAX_ID++;
     }
 
-    public Task(String title) {
+    public Task(String name) {
         this();
-        this.title = title;
+        this.name = name;
         this.creationDate = GregorianCalendar.getInstance().getTime();
     }
 
-    public Task(String title, String description) {
-        this(title);
+    public Task(String name, String description) {
+        this(name);
         this.description = description;
     }
 
 
-    public Task(String title, String description, boolean done) {
-        this(title, description);
+    public Task(String name, String description, boolean done) {
+        this(name, description);
         this.done = done;
     }
 
     protected Task(Parcel in) {
         this.id = in.readInt();
-        this.title = in.readString();
+        this.name = in.readString();
         this.description = in.readString();
         long tmpMCreationDate = in.readLong();
         this.creationDate = tmpMCreationDate == -1 ? null : new Date(tmpMCreationDate);
         this.done = in.readByte() != 0;
     }
 
-    public String getTitle() {
-        return title;
+    public String getName() {
+        return name;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getDescription() {
@@ -124,7 +124,7 @@ public class Task implements Parcelable {
 
     @Override
     public String toString() {
-        return "ID: " + id + ", Title: " + title + ", Description: " + description + ", done: " + done;
+        return "ID: " + id + ", Title: " + name + ", Description: " + description + ", done: " + done;
     }
 
     /**
@@ -139,7 +139,7 @@ public class Task implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(this.id);
-        dest.writeString(this.title);
+        dest.writeString(this.name);
         dest.writeString(this.description);
         dest.writeLong(this.creationDate != null ? this.creationDate.getTime() : -1);
         dest.writeByte(this.done ? (byte) 1 : (byte) 0);
