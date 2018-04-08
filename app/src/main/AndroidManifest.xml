@@ -9,7 +9,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity"
+        <activity
+            android:name=".MainActivity"
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -18,7 +19,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".EditTaskActivity"
+            android:name=".EditorActivity"
             android:label="@string/edit_task_details"
             android:parentActivityName=".MainActivity">
 
@@ -27,16 +28,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.android.todohome.MainActivity" />
         </activity>
-        <activity android:name=".CreateTaskActivity"
-            android:label="@string/create_task"
-            android:parentActivityName=".MainActivity">
 
-            <!-- Parent activity meta-data to support 4.0 and lower -->
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.android.todohome.MainActivity" />
-
-        </activity>
         <provider
             android:name=".model.TaskProvider"
             android:authorities="com.example.android.tasks"

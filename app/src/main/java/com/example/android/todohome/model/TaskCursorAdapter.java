@@ -41,7 +41,7 @@ public class TaskCursorAdapter extends CursorAdapter implements Filterable {
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        Log.d(LOG_TAG, "newView");
+//        Log.d(LOG_TAG, "newView");
 
         // Create new row view
         View view = LayoutInflater.from(context).inflate(R.layout.item_task, parent, false);
@@ -58,14 +58,10 @@ public class TaskCursorAdapter extends CursorAdapter implements Filterable {
 
     /**
      * Bind the task data in the cursor to the sub views of the given view.
-     *
-     * @param view    Existing view, returned earlier by newView() method
-     * @param context
-     * @param cursor
      */
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
-        Log.d(LOG_TAG, "bindView");
+//        Log.d(LOG_TAG, "bindView");
 
         // Retrieve view holder from row view
         TaskViewHolder taskViewHolder = (TaskViewHolder) view.getTag();
@@ -75,10 +71,19 @@ public class TaskCursorAdapter extends CursorAdapter implements Filterable {
         taskViewHolder.bind(cursor);
     }
 
+    private String formatTime(Calendar date) {
+        SimpleDateFormat sdf = new SimpleDateFormat();
+        return sdf.format(date.getTime());
+    }
+
+    private String formatDate(Date date) {
+        return DateFormat.getDateInstance().format(date);
+    }
+
+
     public interface CheckboxClickListener {
         void onCheckboxClick(int clickedItemIndex);
     }
-
 
     private class TaskViewHolder implements View.OnClickListener {
 
@@ -86,7 +91,7 @@ public class TaskCursorAdapter extends CursorAdapter implements Filterable {
         private CheckBox checkBox;
 
         public TaskViewHolder(View itemView) {
-            Log.d(LOG_TAG, "TaskViewHolder()");
+//            Log.d(LOG_TAG, "TaskViewHolder()");
 
             // Find sub views of the row view
             nameTextView = itemView.findViewById(R.id.name_text_view);
@@ -120,23 +125,13 @@ public class TaskCursorAdapter extends CursorAdapter implements Filterable {
         }
     }
 
-
-    private String formatTime(Calendar date) {
-        SimpleDateFormat sdf = new SimpleDateFormat("h:mm");
-        return sdf.format(date.getTime());
-    }
-
-    private String formatDate(Date date) {
-        return DateFormat.getDateInstance().format(date);
-    }
-
 //    @Override
 //    public Filter getFilter() {
 //        return taskFilter;
 //    }
 
 
-//    // TODO: what should happen if the user applies the show-unfinished filter and marks a task as done afterwards? let task disappear immediately?
+//
 //    public void refreshFilter() {
 //        Log.d(LOG_TAG, "refreshFilter()");
 //        if(mode.equals(TaskCursorAdapter.SHOW_ALL)) {

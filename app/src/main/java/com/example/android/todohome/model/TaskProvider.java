@@ -46,13 +46,6 @@ public class TaskProvider extends ContentProvider {
     /**
      * Perform the query for the given uri using the given
      * projection, selection, selection arguments and sort order.
-     *
-     * @param uri
-     * @param projection
-     * @param selection
-     * @param selectionArgs
-     * @param sortOrder
-     * @return
      */
     @Override
     public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
@@ -116,10 +109,6 @@ public class TaskProvider extends ContentProvider {
 
     /**
      * Insert a new task with the given content values into the tasks table.
-     *
-     * @param uri
-     * @param contentValues
-     * @return Uri of the inserted task.
      */
     @Override
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues contentValues) {
@@ -201,12 +190,6 @@ public class TaskProvider extends ContentProvider {
 
     /**
      * Update tasks with the given content values, matching the selection.
-     *
-     * @param uri
-     * @param contentValues
-     * @param selection
-     * @param selectionArgs
-     * @return number of updated rows
      */
     @Override
     public int update(@NonNull Uri uri, @Nullable ContentValues contentValues, @Nullable String selection, @Nullable String[] selectionArgs) {
@@ -285,13 +268,7 @@ public class TaskProvider extends ContentProvider {
 
         // The task description does not need to be checked.
 
-        // Check whether the creation date is not null
-        if (contentValues.containsKey(TaskContract.TaskEntry.COLUMN_TASK_CREATION_DATE)) {
-            long date = contentValues.getAsLong(TaskContract.TaskEntry.COLUMN_TASK_CREATION_DATE);
-            if (date < 1) {
-                throw new IllegalArgumentException("Task requires a creation date");
-            }
-        }
+        // The creation date does not need to be checked (no updates are possible)
 
         // Check whether the value for "done" is valid
         if (contentValues.containsKey(TaskContract.TaskEntry.COLUMN_TASK_DONE)) {

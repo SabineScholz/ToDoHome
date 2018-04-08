@@ -6,17 +6,17 @@
     android:padding="16dp">
 
     <CheckBox
-        android:focusable="false"
         android:id="@+id/checkbox"
         android:layout_width="wrap_content"
         android:layout_height="@dimen/list_item_height"
-        android:paddingLeft="16dp"/>
+        android:focusable="false"
+        android:paddingLeft="16dp" />
 
     <TextView
         android:id="@+id/name_text_view"
         android:layout_width="match_parent"
         android:layout_height="@dimen/list_item_height"
-        android:textSize="@dimen/default_text_size"
-        android:paddingLeft="8dp" />
+        android:paddingLeft="8dp"
+        android:textSize="@dimen/default_text_size" />
 
 </LinearLayout>

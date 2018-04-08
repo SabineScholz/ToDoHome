@@ -15,7 +15,8 @@ public final class TaskContract {
     public static final String PATH_TASKS = "tasks";
 
     // Contract class should not be instantiated, so make constructor private
-    private TaskContract() {}
+    private TaskContract() {
+    }
 
     /**
      * Inner class that defines the constant values for the tasks table

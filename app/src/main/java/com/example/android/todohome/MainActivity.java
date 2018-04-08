@@ -1,11 +1,13 @@
 package com.example.android.todohome;
 
 import android.app.LoaderManager;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -18,8 +20,22 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.example.android.todohome.model.TaskCursorAdapter;
 import com.example.android.todohome.model.TaskContract;
+import com.example.android.todohome.model.TaskCursorAdapter;
+
+
+// TODO back and up button dialogs
+// TODO list view done button listener
+// TODO creation date show date only
+// TODO add due date
+// TODO empty list screen
+// TODO delete single tasks
+// TODO delete all tasks
+// TODO delete unfinished tasks
+// TODO filtering, show unfinished tasks only
+// TODO save button editorActivity
+// TODO dont show "task updated" when no changes have taken place
+// TODO what should happen if the user applies the show-unfinished filter and marks a task as done afterwards? let task disappear immediately?
 
 public class MainActivity extends AppCompatActivity implements TaskCursorAdapter.CheckboxClickListener, LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -65,15 +81,15 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
         // someone clicks on an item in the list
         taskListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 Log.d(LOG_TAG, "Click on list item " + taskCursorAdapter.getItem(position));
 
                 // Start the activity that show the details of the
-                // task that was clicked on. Put the task object into the intent.
-                Intent intent = new Intent(getApplicationContext(), EditTaskActivity.class);
-                // TODO send URI only, not the task itself
-//                intent.putExtra(TASK_MESSAGE, taskCursorAdapter.getItem(position));
-                startActivityForResult(intent, REQUEST_CODE_CREATE_TASK);
+                // task that was clicked on. Add the task uri to the intent.
+                Intent intent = new Intent(getApplicationContext(), EditorActivity.class);
+                Uri uri = ContentUris.withAppendedId(TaskContract.TaskEntry.CONTENT_URI, id);
+                intent.setData(uri);
+                startActivity(intent);
             }
         });
 
@@ -84,9 +100,9 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
             public void onClick(View view) {
                 Log.d(LOG_TAG, "add new task");
 
-                // Start the activity with which new currentTaskList can be created
-                Intent intent = new Intent(getApplicationContext(), CreateTaskActivity.class);
-                startActivityForResult(intent, 1);
+                // Start the EditorActivity
+                Intent intent = new Intent(getApplicationContext(), EditorActivity.class);
+                startActivity(intent);
             }
         });
     }
@@ -145,7 +161,6 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
     }
 
     private void deleteFinishedTasks() {
-        // TODO
     }
 
     @Override
@@ -176,7 +191,6 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
     @Override
     public void onCheckboxClick(int clickedItemIndex) {
         Toast.makeText(getApplicationContext(), "Item # " + clickedItemIndex + " clicked", Toast.LENGTH_SHORT).show();
-        // TODO update task (set to done/undone)
 //        getContentResolver().update();
     }
 

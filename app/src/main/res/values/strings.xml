@@ -13,14 +13,17 @@
 
     <!-- strings for the warning dialog that is shown when the user leaves the task activity while there are unsaved changes-->
     <string name="warning_message">Discard changes?</string>
-    <string name="cancel">cancel</string>
+    <string name="cancel">Cancel</string>
     <string name="discard_changes">discard</string>
 
     <!-- strings for the "create task" activity -->
     <string name="create_task">Create Task</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="insert_dummy_data">Insert dummy data</string>
+    <string name="editor_activity_title_edit_task">Edit Task</string>
+    <string name="editor_insert_task_failed">Error with inserting task</string>
+    <string name="editor_insert_task_successful">Task saved</string>
+    <string name="editor_update_task_failed">Error with updating task</string>
+    <string name="editor_update_task_successful">Task updated</string>
 
 </resources>

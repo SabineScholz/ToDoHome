@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="editor_activity_title_new_task" type="id">Add a Task</item>
+</resources>
