@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Simple Task App</string>
+    <string name="editor_activity_title_new_task">Neue Aufgabe</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="delete_single_task">Löschen</string>
+    <string name="delete_all_tasks">Alle Aufgaben löschen</string>
+    <string name="delete_finished_tasks">Erledigte Aufgaben löschen</string>
+    <string name="label_description">Beschreibung</string>
+    <string name="discard_changes">verwerfen</string>
+    <string name="warning_message">Änderungen verwerfen?</string>
+    <string name="label_done">Erledigt</string>
+    <string name="editor_activity_title_edit_task">Aufgabe bearbeiten</string>
+    <string name="settings_language_english_value">Englisch</string>
+    <string name="settings_language_english_label">Englisch</string>
+    <string name="editor_insert_task_failed">Fehler beim Hinzufügen der Aufgabe</string>
+    <string name="editor_update_task_failed">"Fehler beim Ändern der Aufgabe "</string>
+    <string name="settings_language_german_value">Deutsch</string>
+    <string name="settings_language_german_label">Deutsch</string>
+    <string name="settings_language_label">Sprache</string>
+    <string name="empty_view_title_text">Nichts zu tun!</string>
+    <string name="settings">Einstellungen</string>
+    <string name="filter_show_all_tasks">Alle Aufgaben</string>
+    <string name="filter_unfinished_tasks">Unerledigte Aufgaben</string>
+    <string name="label_task">Aufgabe</string>
+    <string name="editor_insert_task_successful">Aufgabe gespeichert</string>
+    <string name="editor_update_task_successful">Aufgabe aktualisiert</string>
+    <string name="label_creation_date">Erstellt am</string>
+    <string name="insert_dummy_data">Beispieldaten einfügen</string>
+</resources>

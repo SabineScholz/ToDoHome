@@ -2,7 +2,6 @@
     <string name="app_name">Simple Task App</string>
 
     <!-- strings for the edit task layout -->
-    <string name="edit_task_details">Edit Task Details</string>
     <string name="label_task">Task</string>
     <string name="label_description">Description</string>
     <string name="label_creation_date">Creation Date</string>
@@ -17,9 +16,6 @@
     <string name="cancel">Cancel</string>
     <string name="discard_changes">discard</string>
 
-    <!-- strings for the "create task" activity -->
-    <string name="create_task">Create Task</string>
-
     <string name="insert_dummy_data">Insert dummy data</string>
     <string name="editor_activity_title_edit_task">Edit Task</string>
     <string name="editor_activity_title_new_task">Add a Task</string>
@@ -28,7 +24,18 @@
     <string name="editor_update_task_failed">Error with updating task</string>
     <string name="editor_update_task_successful">Task updated</string>
     <string name="empty_view_title_text">Nothing to do!</string>
+    <string name="delete_single_task">Delete</string>
+    <string name="settings">Settings</string>
 
+    <!-- strings for the settings activity -->
+    <string name="settings_language_label">Language</string>
+    <string name="settings_language_key" translatable="false">language</string>
+    <string name="settings_language_default" translatable="false">@string/settings_language_english_label</string>
+
+    <string name="settings_language_english_value">english</string>
+    <string name="settings_language_german_value">german</string>
+    <string name="settings_language_english_label">English</string>
+    <string name="settings_language_german_label">German</string>
 
 
 </resources>

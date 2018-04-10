@@ -16,6 +16,8 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -68,6 +70,8 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        Log.d(LOG_TAG, "onCreateView");
+
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.activity_task, container, false);
 
@@ -85,31 +89,32 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         // Check whether we are in insert or edit mode
         currentTaskUri = intent.getData();
 
+        if(savedInstanceState == null) {
+            if (currentTaskUri == null) {
+                // we are in insert mode
+                Log.d(LOG_TAG, "insert mode");
 
-        if (currentTaskUri == null) {
-            // we are in insert mode
-            Log.d(LOG_TAG, "insert mode");
+                // set the nameEditText of the activity to reflect that we are in insert mode
+                getActivity().setTitle(R.string.editor_activity_title_new_task);
 
-            // set the nameEditText of the activity to reflect that we are in insert mode
-            getActivity().setTitle(R.string.editor_activity_title_new_task);
+                // display the current date in the creation date task view
+                currentTime = System.currentTimeMillis();
+                creationDateTextView.setText(formatDate(currentTime));
 
-            // display the current date in the creation date task view
-            currentTime = System.currentTimeMillis();
-            creationDateTextView.setText(formatDate(currentTime));
+                // Invalidate the options menu, so the "Delete" menu option can be hidden.
+                // (It doesn't make sense to delete a task that hasn't been created yet.)
+                //  invalidateOptionsMenu();
 
-            // Invalidate the options menu, so the "Delete" menu option can be hidden.
-            // (It doesn't make sense to delete a task that hasn't been created yet.)
-            //  invalidateOptionsMenu();
+            } else {
+                // we are in edit mode
+                Log.d(LOG_TAG, "edit mode");
 
-        } else {
-            // we are in edit mode
-            Log.d(LOG_TAG, "edit mode");
+                // set nameEditText accordingly
+                getActivity().setTitle(R.string.editor_activity_title_edit_task);
 
-            // set nameEditText accordingly
-            getActivity().setTitle(R.string.editor_activity_title_edit_task);
-
-            // Initialize loader that fetches data for the current task from the database
-            getLoaderManager().initLoader(EXISTING_TASK_LOADER, null, this);
+                // Initialize loader that fetches data for the current task from the database
+                getLoaderManager().initLoader(EXISTING_TASK_LOADER, null, this);
+            }
         }
 
         // add change listeners to the views so that we can warn the user if he leaves the activity
@@ -210,9 +215,22 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
             case android.R.id.home:
                 warnUser();
                 return true;
+            case R.id.menu_item_insert_dummy_data:
+                deleteTask();
+                return true;
         }
         return false;
     }
+
+    private void deleteTask() {
+    }
+
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        MenuInflater inflater = getMenuInflater();
+//        inflater.inflate(R.menu.menu_detail, menu);
+//        return true;
+//    }
 
 
     public void warnUser() {
@@ -298,5 +316,36 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         descriptionEditText.setText(null);
         creationDateTextView.setText(null);
         doneCheckBox.setChecked(false);
+    }
+
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.d(LOG_TAG, "onStop()");
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.d(LOG_TAG, "onStart()");
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(LOG_TAG, "onResume()");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d(LOG_TAG, "onDestroy()");
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.d(LOG_TAG, "onSaveInstanceState()");
     }
 }

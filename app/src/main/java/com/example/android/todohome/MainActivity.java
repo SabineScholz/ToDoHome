@@ -6,9 +6,12 @@ import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.Preference;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -19,20 +22,18 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.FilterQueryProvider;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.android.todohome.model.TaskContract;
 import com.example.android.todohome.model.TaskCursorAdapter;
 
-
-// TODO back and up button dialogs
-// TODO creation date show date only
+// TODO finish language settings
 // TODO delete single tasks
-// TODO filtering, show unfinished tasks only
-// TODO save button editorActivity
+// TODO back and up button dialogs
 // TODO dont show "task updated" when no changes have taken place
-// TODO what should happen if the user applies the show-unfinished filter and marks a task as done afterwards? let task disappear immediately?
 // TODO add due date
+// TODO within unfinished tasks view: if task is set to "done", it should slide to the right (use animations of recycler view?)
     /* sources for filter option
     https://stackoverflow.com/questions/24769257/custom-listview-adapter-with-filter-android/24771174#24771174
     https://www.survivingwithandroid.com/2012/10/android-listview-custom-filter.html
@@ -50,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
 
     private TaskCursorAdapter taskCursorAdapter;
     private ListView taskListView;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +71,9 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
         // Find and set empty view on the ListView, so that it only shows when the list has 0 items.
         View emptyView = findViewById(R.id.empty_view);
         taskListView.setEmptyView(emptyView);
+
+        progressBar = findViewById(R.id.progress_bar);
+        progressBar.setVisibility(View.VISIBLE);
 
         // Initialize loader that fetches data from the database
         getLoaderManager().initLoader(LOADER_ID, null, this);
@@ -130,6 +135,7 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
         switch (item.getItemId()) {
             case R.id.menu_item_insert_dummy_data:
                 insertDummyData();
+                return true;
             case R.id.menu_item_all_tasks:
                 taskCursorAdapter.getFilter().filter(TaskCursorAdapter.SHOW_ALL);
                 return true;
@@ -142,9 +148,24 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
             case R.id.menu_item_delete_all_tasks:
                 deleteAllTasks();
                return true;
+            case R.id.menu_item_settings:
+                startSettingsActivity();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void setUpSharedPreferences() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        // extract language setting and apply the language
+
+    }
+
+
+    private void startSettingsActivity() {
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
     }
 
     /**
@@ -246,6 +267,7 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
     @Override
     public Loader<Cursor> onCreateLoader(int loader_id, Bundle bundle) {
         Log.d(LOG_TAG, "onCreateLoader");
+        progressBar.setVisibility(View.VISIBLE);
 
         switch (loader_id) {
             case LOADER_ID:
@@ -259,6 +281,10 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         Log.d(LOG_TAG, "onLoadFinished");
+
+        // Hide loading indicator because the data has been loaded
+        progressBar.setVisibility(View.GONE);
+
         // update the adapter with the cursor containing updated task data
         taskCursorAdapter.changeCursor(cursor);
     }
