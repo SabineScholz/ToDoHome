@@ -1,6 +1,8 @@
-package com.example.android.todohome;
+package com.example.android.todohome.fragments;
 
+import android.app.AlertDialog;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -27,18 +29,19 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.android.todohome.R;
 import com.example.android.todohome.model.TaskContract;
 
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 
 
 public class EditorFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String LOG_TAG = EditorFragment.class.getSimpleName() + " TEST";
     private static final int EXISTING_TASK_LOADER = 1;
+
+
     private EditText nameEditText;
     private EditText descriptionEditText;
     private CheckBox doneCheckBox;
@@ -59,6 +62,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         @Override
         public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
             change_detected = true;
+            Log.d(LOG_TAG, "onTextChanged");
         }
 
         @Override
@@ -89,22 +93,17 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         // Check whether we are in insert or edit mode
         currentTaskUri = intent.getData();
 
-        if(savedInstanceState == null) {
+        // display the current date in the creation date task view
+        currentTime = System.currentTimeMillis();
+        creationDateTextView.setText(formatDate(currentTime));
+
+        if (savedInstanceState == null) {
             if (currentTaskUri == null) {
                 // we are in insert mode
                 Log.d(LOG_TAG, "insert mode");
 
                 // set the nameEditText of the activity to reflect that we are in insert mode
                 getActivity().setTitle(R.string.editor_activity_title_new_task);
-
-                // display the current date in the creation date task view
-                currentTime = System.currentTimeMillis();
-                creationDateTextView.setText(formatDate(currentTime));
-
-                // Invalidate the options menu, so the "Delete" menu option can be hidden.
-                // (It doesn't make sense to delete a task that hasn't been created yet.)
-                //  invalidateOptionsMenu();
-
             } else {
                 // we are in edit mode
                 Log.d(LOG_TAG, "edit mode");
@@ -124,13 +123,6 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         setHasOptionsMenu(true);
 
         return rootView;
-    }
-
-    private String formatDate(long currentTime) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(currentTime);
-        DateFormat formatter = DateFormat.getDateInstance();
-        return formatter.format(calendar.getTime());
     }
 
 
@@ -165,7 +157,6 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
             values.put(TaskContract.TaskEntry.COLUMN_TASK_DONE, TaskContract.TaskEntry.DONE_NO);
         }
 
-
         // Check whether we are in edit or insert mode
         if (currentTaskUri == null) {
 
@@ -189,21 +180,62 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
 
             // edit mode
 
-            // Update the existing task
-            Log.d(LOG_TAG, "updated uri: " + currentTaskUri);
-            int updatedRows = getContext().getContentResolver().update(currentTaskUri, values, null, null);
+            // Update the existing task only if changes have taken place
+            if (change_detected) {
+                Log.d(LOG_TAG, "updated uri: " + currentTaskUri);
+                int updatedRows = getContext().getContentResolver().update(currentTaskUri, values, null, null);
 
-            // Show a toast message depending on whether or not the update was successful
-            if (updatedRows == 0) {
-                // If the new content URI is null, then there was an error with update.
-                Toast.makeText(getContext(), getContext().getString(R.string.editor_update_task_failed), Toast.LENGTH_SHORT).show();
-            } else {
-                // Otherwise, the update was successful and we can display a toast.
-                Toast.makeText(getContext(), getContext().getString(R.string.editor_update_task_successful), Toast.LENGTH_SHORT).show();
+                // Show a toast message depending on whether or not the update was successful
+                if (updatedRows == 0) {
+                    // If the new content URI is null, then there was an error with update.
+                    Toast.makeText(getContext(), getContext().getString(R.string.editor_update_task_failed), Toast.LENGTH_SHORT).show();
+                } else {
+                    // Otherwise, the update was successful and we can display a toast.
+                    Toast.makeText(getContext(), getContext().getString(R.string.editor_update_task_successful), Toast.LENGTH_SHORT).show();
+                }
             }
         }
     }
 
+
+    private void deleteTask() {
+        // Only perform the delete if this is an existing task.
+        if (currentTaskUri != null) {
+            Log.d(LOG_TAG, "deleting task " + currentTaskUri);
+            int deletedRows = getContext().getContentResolver().delete(currentTaskUri, null, null);
+
+            // Show a toast message depending on whether or not the deletion was successful
+            if (deletedRows == 0) {
+                // If the new content URI is null, then there was an error with deletion.
+                Toast.makeText(getContext(), getContext().getString(R.string.editor_delete_task_failed), Toast.LENGTH_SHORT).show();
+                Log.d(LOG_TAG, "failed to delete");
+            } else {
+                // Otherwise, the deletion was successful and we can display a toast.
+                Toast.makeText(getContext(), getContext().getString(R.string.editor_delete_task_successful), Toast.LENGTH_SHORT).show();
+                Log.d(LOG_TAG, "task deleted");
+            }
+        }
+        getActivity().finish();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_editor, menu);
+    }
+
+    /**
+     * This method is called after invalidateOptionsMenu(), so that the
+     * menu can be updated (some menu items can be hidden or made visible).
+     */
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        // If this is a new task, hide the "Delete" menu item.
+        if (currentTaskUri == null) {
+            MenuItem menuItem = menu.findItem(R.id.menu_item_delete_task);
+            menuItem.setVisible(false);
+        }
+    }
 
     /**
      * Is triggered when the up button is clicked on. If changes have been made
@@ -213,30 +245,63 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                warnUser();
+                showExitConfirmationDialog();
                 return true;
-            case R.id.menu_item_insert_dummy_data:
-                deleteTask();
+            case R.id.menu_item_delete_task:
+                // Pop up confirmation dialog for deletion
+                showDeleteConfirmationDialog();
                 return true;
         }
         return false;
     }
 
-    private void deleteTask() {
+    private void showDeleteConfirmationDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setMessage(R.string.alert_delete_single_task);
+        builder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                // User clicked the "Delete" button, so delete the task.
+                deleteTask();
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Cancel" button, so dismiss the dialog
+                // and continue editing the task.
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        MenuInflater inflater = getMenuInflater();
-//        inflater.inflate(R.menu.menu_detail, menu);
-//        return true;
-//    }
-
-
-    public void warnUser() {
+    public void showExitConfirmationDialog() {
         if (change_detected) {
-            new WarningDialogFragment().show(getActivity().getFragmentManager(), "warning");
+            // ask the user if he wants to discard the changes or cancel the up navigation
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(R.string.warning_message);
+            builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    Log.d(LOG_TAG, "cancel");
+                }
+            });
+            builder.setPositiveButton(R.string.discard_changes, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    Log.d(LOG_TAG, "discard changes");
+                    NavUtils.navigateUpFromSameTask(getActivity());
+                }
+            });
+            builder.setCancelable(false);
+            // Create and show the AlertDialog
+            AlertDialog alertDialog = builder.create();
+            alertDialog.show();
         } else {
+            // navigate up
             NavUtils.navigateUpFromSameTask(getActivity());
         }
     }
@@ -246,6 +311,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
      * any changes were made to the task.
      */
     private void addChangeListeners() {
+        Log.d(LOG_TAG, "addChangeListeners");
         nameEditText.addTextChangedListener(textWatcher);
         descriptionEditText.addTextChangedListener(textWatcher);
         doneCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -308,6 +374,8 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         }
         descriptionEditText.setText(description);
         creationDateTextView.setText(formatDate(creationDate));
+
+        change_detected = false;
     }
 
     @Override
@@ -348,4 +416,13 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         super.onSaveInstanceState(outState);
         Log.d(LOG_TAG, "onSaveInstanceState()");
     }
+
+
+    private String formatDate(long currentTime) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(currentTime);
+        DateFormat formatter = DateFormat.getDateInstance();
+        return formatter.format(calendar.getTime());
+    }
+
 }

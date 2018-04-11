@@ -6,36 +6,56 @@
     <string name="label_description">Description</string>
     <string name="label_creation_date">Creation Date</string>
     <string name="label_done">Done</string>
-    <string name="filter_show_all_tasks">Show all tasks</string>
-    <string name="filter_unfinished_tasks">Show unfinished tasks</string>
-    <string name="delete_finished_tasks">Delete finished tasks</string>
-    <string name="delete_all_tasks">Delete all tasks</string>
+
 
     <!-- strings for the warning dialog that is shown when the user leaves the task activity while there are unsaved changes-->
     <string name="warning_message">Discard changes?</string>
     <string name="cancel">Cancel</string>
     <string name="discard_changes">discard</string>
 
-    <string name="insert_dummy_data">Insert dummy data</string>
+    <!-- Activity labels -->
     <string name="editor_activity_title_edit_task">Edit Task</string>
     <string name="editor_activity_title_new_task">Add a Task</string>
+
+
+    <!-- Toast messages for saving, updating and deleting tasks -->
     <string name="editor_insert_task_failed">Error with inserting task</string>
     <string name="editor_insert_task_successful">Task saved</string>
     <string name="editor_update_task_failed">Error with updating task</string>
     <string name="editor_update_task_successful">Task updated</string>
+    <string name="editor_delete_task_failed">Error with deleting task</string>
+    <string name="editor_delete_task_successful">Task deleted</string>
+
+    <!-- Text for empty list view -->
     <string name="empty_view_title_text">Nothing to do!</string>
+
+
+    <!-- Strings for the options menu_main -->
     <string name="delete_single_task">Delete</string>
     <string name="settings">Settings</string>
+    <string name="insert_dummy_data">Insert dummy data</string>
+    <string name="filter_show_all_tasks">Show all tasks</string>
+    <string name="filter_unfinished_tasks">Show unfinished tasks</string>
+    <string name="delete_finished_tasks">Delete finished tasks</string>
+    <string name="delete_all_tasks">Delete all tasks</string>
+
 
     <!-- strings for the settings activity -->
     <string name="settings_language_label">Language</string>
     <string name="settings_language_key" translatable="false">language</string>
     <string name="settings_language_default" translatable="false">@string/settings_language_english_label</string>
 
-    <string name="settings_language_english_value">english</string>
+    <string name="settings_language_english_value" translatable="false">english</string>
     <string name="settings_language_german_value">german</string>
     <string name="settings_language_english_label">English</string>
     <string name="settings_language_german_label">German</string>
+
+    <!-- Dialog message to ask the user to confirm deleting the current task -->
+    <string name="alert_delete_single_task">Delete this task?</string>
+
+    <!-- Dialog button text for the option to confirm deleting the current task -->
+    <string name="delete">Delete</string>
+
 
 
 </resources>

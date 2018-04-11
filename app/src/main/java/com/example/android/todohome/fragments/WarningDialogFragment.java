@@ -1,4 +1,4 @@
-package com.example.android.todohome;
+package com.example.android.todohome.fragments;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -7,6 +7,8 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.util.Log;
+
+import com.example.android.todohome.R;
 
 public class WarningDialogFragment extends DialogFragment {
 

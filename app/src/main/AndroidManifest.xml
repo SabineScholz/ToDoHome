@@ -10,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.MainActivity"
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -19,13 +19,13 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".EditorActivity"
-            android:parentActivityName=".MainActivity">
+            android:name=".activities.EditorActivity"
+            android:parentActivityName=".activities.MainActivity">
 
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.android.todohome.MainActivity" />
+                android:value="com.example.android.todohome.activities.MainActivity" />
         </activity>
 
         <provider
@@ -33,9 +33,9 @@
             android:authorities="com.example.android.tasks"
             android:exported="false" />
 
-        <activity android:name=".SettingsActivity"
+        <activity android:name=".activities.SettingsActivity"
             android:label="@string/settings"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName=".activities.MainActivity">
             <meta-data
                 android:name="android.support.PARET_ACTIVITY"
                 android:value="com.example.android.todohome.MainActivity">

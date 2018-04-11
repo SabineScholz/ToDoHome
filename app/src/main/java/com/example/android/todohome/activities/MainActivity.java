@@ -1,4 +1,4 @@
-package com.example.android.todohome;
+package com.example.android.todohome.activities;
 
 import android.app.LoaderManager;
 import android.content.ContentUris;
@@ -10,7 +10,6 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -25,30 +24,20 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.example.android.todohome.R;
 import com.example.android.todohome.model.TaskContract;
 import com.example.android.todohome.model.TaskCursorAdapter;
 
 // TODO finish language settings
-// TODO delete single tasks
-// TODO back and up button dialogs
-// TODO dont show "task updated" when no changes have taken place
 // TODO add due date
 // TODO within unfinished tasks view: if task is set to "done", it should slide to the right (use animations of recycler view?)
-    /* sources for filter option
-    https://stackoverflow.com/questions/24769257/custom-listview-adapter-with-filter-android/24771174#24771174
-    https://www.survivingwithandroid.com/2012/10/android-listview-custom-filter.html
-    https://gist.github.com/DeepakRattan/26521c404ffd7071d0a4
-     */
 
 public class MainActivity extends AppCompatActivity implements TaskCursorAdapter.CheckboxClickListener, LoaderManager.LoaderCallbacks<Cursor> {
 
-    // Tag for log messages
-    private static final String LOG_TAG = MainActivity.class.getSimpleName() + " TEST";
-
     // ID of the loader that fetches the data for the listview
     public static final int LOADER_ID = 0;
-
-
+    // Tag for log messages
+    private static final String LOG_TAG = MainActivity.class.getSimpleName() + " TEST";
     private TaskCursorAdapter taskCursorAdapter;
     private ListView taskListView;
     private ProgressBar progressBar;
@@ -82,12 +71,12 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
             @Override
             public Cursor runQuery(CharSequence constraint) {
                 Log.d(LOG_TAG, "Filter");
-                if(constraint == TaskCursorAdapter.SHOW_UNFINISHED) {
+                if (constraint == TaskCursorAdapter.SHOW_UNFINISHED) {
                     String selection = TaskContract.TaskEntry.COLUMN_TASK_DONE + " = ?";
                     String[] selectionArgs = new String[]{String.valueOf(TaskContract.TaskEntry.DONE_NO)};
                     return getContentResolver().query(TaskContract.TaskEntry.CONTENT_URI, null, selection, selectionArgs, null);
                 } else {
-                    return getContentResolver().query(TaskContract.TaskEntry.CONTENT_URI, null, null,  null, null);
+                    return getContentResolver().query(TaskContract.TaskEntry.CONTENT_URI, null, null, null, null);
                 }
             }
         });
@@ -126,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu, menu);
+        inflater.inflate(R.menu.menu_main, menu);
         return true;
     }
 
@@ -147,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
                 return true;
             case R.id.menu_item_delete_all_tasks:
                 deleteAllTasks();
-               return true;
+                return true;
             case R.id.menu_item_settings:
                 startSettingsActivity();
                 return true;
@@ -218,25 +207,6 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
     }
 
 
-
-    @Override
-    protected void onStop() {
-        Log.d(LOG_TAG, "onStop");
-        super.onStop();
-    }
-
-    @Override
-    protected void onPause() {
-        Log.d(LOG_TAG, "onPause");
-        super.onPause();
-    }
-
-    @Override
-    protected void onResume() {
-        Log.d(LOG_TAG, "onResume");
-        super.onResume();
-    }
-
     /**
      * Is called when the "done"-checkbox is clicked in the list view. Updates the task in
      * the database accordingly.
@@ -246,7 +216,7 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
         Log.d(LOG_TAG, "onCheckboxClick, task index: " + clickedTaskIndex);
         Uri uri = ContentUris.withAppendedId(TaskContract.TaskEntry.CONTENT_URI, clickedTaskIndex);
         ContentValues contentValues = new ContentValues();
-        if(taskDone) {
+        if (taskDone) {
             contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_DONE, TaskContract.TaskEntry.DONE_YES);
         } else {
             contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_DONE, TaskContract.TaskEntry.DONE_NO);
@@ -257,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
         // Show a toast message depending on whether or not the update was successful
         if (updatedRows == 0) {
             // If the new content URI is null, then there was an error with update.
-            Toast.makeText(this,getString(R.string.editor_update_task_failed), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.editor_update_task_failed), Toast.LENGTH_SHORT).show();
         } else {
             // Otherwise, the update was successful and we can display a toast.
             Toast.makeText(this, getString(R.string.editor_update_task_successful), Toast.LENGTH_SHORT).show();
@@ -293,5 +263,24 @@ public class MainActivity extends AppCompatActivity implements TaskCursorAdapter
     public void onLoaderReset(Loader<Cursor> loader) {
         Log.d(LOG_TAG, "onLoaderReset");
         taskCursorAdapter.changeCursor(null);
+    }
+
+
+    @Override
+    protected void onStop() {
+        Log.d(LOG_TAG, "onStop");
+        super.onStop();
+    }
+
+    @Override
+    protected void onPause() {
+        Log.d(LOG_TAG, "onPause");
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        Log.d(LOG_TAG, "onResume");
+        super.onResume();
     }
 }

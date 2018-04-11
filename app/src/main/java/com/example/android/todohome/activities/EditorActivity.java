@@ -1,4 +1,4 @@
-package com.example.android.todohome;
+package com.example.android.todohome.activities;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -6,10 +6,10 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.widget.Toast;
+
+import com.example.android.todohome.R;
+import com.example.android.todohome.fragments.EditorFragment;
+import com.example.android.todohome.fragments.WarningDialogFragment;
 
 public class EditorActivity extends AppCompatActivity {
 
@@ -25,34 +25,21 @@ public class EditorActivity extends AppCompatActivity {
         Log.d(LOG_TAG, "onCreate");
         setContentView(R.layout.fragment_container);
 
-        if (savedInstanceState == null) {
-            Log.d(LOG_TAG, "savedInstanceState == null");
+        Log.d(LOG_TAG, "savedInstanceState == null");
 
+        if (savedInstanceState == null) {
             // Add EditorFragment to this Activity
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            EditorFragment editorFragment = new EditorFragment();
-            fragmentTransaction.add(R.id.container, editorFragment, FRAGMENT_TAG);
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.add(R.id.container, new EditorFragment(), FRAGMENT_TAG);
             fragmentTransaction.commit();
-        } else {
-            Log.d(LOG_TAG, "savedInstanceState NOT null");
         }
     }
 
     @Override
     public void onBackPressed() {
         EditorFragment editorFragment = (EditorFragment) getSupportFragmentManager().findFragmentByTag(FRAGMENT_TAG);
-        if (editorFragment.hasChanged()) {
-            new WarningDialogFragment().show(getFragmentManager(), "warning");
-        } else {
-            super.onBackPressed();
-        }
-
-        // This does not work: (Dialog disappears automatically...)
-//        editorFragment.warnUser();
+        editorFragment.showExitConfirmationDialog();
     }
-
-
 
 
     @Override

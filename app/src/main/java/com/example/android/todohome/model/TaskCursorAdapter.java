@@ -6,19 +6,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.CursorAdapter;
-import android.widget.Filterable;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.android.todohome.R;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Created by Sabine on 27.03.2018.
@@ -26,9 +19,9 @@ import java.util.Date;
 
 public class TaskCursorAdapter extends CursorAdapter {
 
-    private static final String LOG_TAG = TaskCursorAdapter.class.getSimpleName() + " TEST";
     public static final CharSequence SHOW_UNFINISHED = "0";
     public static final CharSequence SHOW_ALL = "1";
+    private static final String LOG_TAG = TaskCursorAdapter.class.getSimpleName() + " TEST";
     private CheckboxClickListener checkboxClickListener;
 
     public TaskCursorAdapter(Context context, Cursor c, CheckboxClickListener checkboxClickListener) {
