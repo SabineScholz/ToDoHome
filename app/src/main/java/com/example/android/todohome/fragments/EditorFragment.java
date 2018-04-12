@@ -2,8 +2,8 @@ package com.example.android.todohome.fragments;
 
 import android.app.AlertDialog;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -37,6 +37,7 @@ import java.text.DateFormat;
 import java.util.Calendar;
 
 // TODO add interface for EditorActivity
+// TODO delegate CRUD to activity
 public class EditorFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String LOG_TAG = EditorFragment.class.getSimpleName() + " TEST";
@@ -50,6 +51,9 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
     private CheckBox doneCheckBox;
     private TextView creationDateTextView;
     private long currentTime;
+
+    // Reference to the parent activity implementing the OnEditorActionListener interface
+    private OnEditorActionListener onEditorActionListener;
 
     private View rootView;
     private boolean change_detected;
@@ -83,21 +87,42 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
      */
     public static EditorFragment newInstance(Uri uri) {
         EditorFragment fragment = new EditorFragment();
-        Bundle args = new Bundle();
-        args.putString(TASK_URI, uri.toString());
-        fragment.setArguments(args);
+        // Check whether we are in insert (uri == null) or edit (uri != null) mode
+        if (uri != null) {
+            Bundle args = new Bundle();
+            args.putString(TASK_URI, uri.toString());
+            fragment.setArguments(args);
+        }
         return fragment;
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Retrieve task uri from previous fragments
-        Bundle args = getArguments();
-        String uri = args.getString(TASK_URI);
-        currentTaskUri = Uri.parse(uri);
+        Log.d(LOG_TAG, "onCreate");
+        String uri = null;
+        // Check whether a task uri can be retrieved
+        if (getArguments() != null) {
+            Bundle args = getArguments();
+            uri = args.getString(TASK_URI);
+        }
+        if (uri != null) {
+            currentTaskUri = Uri.parse(uri);
+        }
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnEditorActionListener) {
+            onEditorActionListener = (OnEditorActionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnEditorActionListener");
+        }
+    }
+
+    // TODO move activity-dependent methods in OnActivityCreated
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -115,30 +140,13 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         doneCheckBox = rootView.findViewById(R.id.done_checkbox);
         creationDateTextView = rootView.findViewById(R.id.creation_date);
 
-        // Get the intent that started this fragment
-        Intent intent = getActivity().getIntent();
-
-        // Check whether we are in insert or edit mode
-        currentTaskUri = intent.getData();
-
         // display the current date in the creation date task view
         currentTime = System.currentTimeMillis();
         creationDateTextView.setText(formatDate(currentTime));
 
         if (savedInstanceState == null) {
-            if (currentTaskUri == null) {
-                // we are in insert mode
-                Log.d(LOG_TAG, "insert mode");
-
-                // set the nameEditText of the activity to reflect that we are in insert mode
-                getActivity().setTitle(R.string.editor_activity_title_new_task);
-            } else {
-                // we are in edit mode
-                Log.d(LOG_TAG, "edit mode");
-
-                // set nameEditText accordingly
-                getActivity().setTitle(R.string.editor_activity_title_edit_task);
-
+            if (currentTaskUri != null) {
+                // edit mode
                 // Initialize loader that fetches data for the current task from the database
                 getLoaderManager().initLoader(EXISTING_TASK_LOADER, null, this);
             }
@@ -148,6 +156,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         // while there are unsaved changes
         addChangeListeners();
 
+        // let this fragment's onCreateOptionsMenu,... methods receive calls
         setHasOptionsMenu(true);
 
         return rootView;
@@ -164,8 +173,8 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
             public void onClick(View view) {
                 // Save task to database
                 saveTask();
-                // Exit activity
-                getActivity().finish();
+                // Inform activity that we're done
+                onEditorActionListener.onTaskSaved();
             }
         });
     }
@@ -241,15 +250,21 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
                 // Otherwise, the deletion was successful and we can display a toast.
                 Toast.makeText(getContext(), getContext().getString(R.string.editor_delete_task_successful), Toast.LENGTH_SHORT).show();
                 Log.d(LOG_TAG, "task deleted");
+
+                // Clear all views
+                onLoaderReset(null);
             }
         }
-        getActivity().finish();
+        // Inform activity that we're done
+        onEditorActionListener.onTaskDeleted();
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        Log.d(LOG_TAG, "onCreateOptionsMenu");
         inflater.inflate(R.menu.menu_editor, menu);
     }
+
 
     /**
      * This method is called after invalidateOptionsMenu(), so that the
@@ -258,6 +273,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
+        Log.d(LOG_TAG, "onPrepareOptionsMenu");
         // If this is a new task, hide the "Delete" menu item.
         if (currentTaskUri == null) {
             MenuItem menuItem = menu.findItem(R.id.menu_item_delete_task);
@@ -346,6 +362,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 change_detected = true;
+                Log.d(LOG_TAG, "doneCheckBox onCheckedChanged");
             }
         });
     }
@@ -365,6 +382,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
                 return null;
         }
     }
+
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
@@ -447,6 +465,14 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         calendar.setTimeInMillis(currentTime);
         DateFormat formatter = DateFormat.getDateInstance();
         return formatter.format(calendar.getTime());
+    }
+
+    public interface OnEditorActionListener {
+        void onTaskSaved();
+
+        void onTaskDeleted();
+
+        void setTitle(int stringId);
     }
 
 }

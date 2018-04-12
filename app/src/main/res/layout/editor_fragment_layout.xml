@@ -5,8 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="24dp"
-    tools:context="com.example.android.todohome.activities.EditorActivity"
-    android:id="@+id/editor_parent_view">
+    tools:context="com.example.android.todohome.activities.EditorActivity">
 
     <TextView
         android:id="@+id/label_task_text_view"

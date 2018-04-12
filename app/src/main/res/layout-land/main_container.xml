@@ -14,7 +14,7 @@
         android:id="@+id/list_fragment_container"></fragment>
 
 
-    <!-- EditorFragment container (only filled with the actual EditorFragment when a task in the list is selected) -->
+    <!-- EditorFragment container (dynamically filled with the actual EditorFragment when a task in the list is selected) -->
     <FrameLayout
         android:layout_width="0dp"
         android:layout_weight="1"
