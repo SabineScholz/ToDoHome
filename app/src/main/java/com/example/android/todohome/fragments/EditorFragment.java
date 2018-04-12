@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -35,12 +36,14 @@ import com.example.android.todohome.model.TaskContract;
 import java.text.DateFormat;
 import java.util.Calendar;
 
-
+// TODO add interface for EditorActivity
 public class EditorFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String LOG_TAG = EditorFragment.class.getSimpleName() + " TEST";
     private static final int EXISTING_TASK_LOADER = 1;
 
+    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+    private static final String TASK_URI = "task_uri";
 
     private EditText nameEditText;
     private EditText descriptionEditText;
@@ -70,6 +73,31 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         }
     };
 
+    public EditorFragment() {
+        // Required empty public constructor
+    }
+
+    /**
+     * Use this factory method to create a new instance of
+     * this fragment using the provided parameters.
+     */
+    public static EditorFragment newInstance(Uri uri) {
+        EditorFragment fragment = new EditorFragment();
+        Bundle args = new Bundle();
+        args.putString(TASK_URI, uri.toString());
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // Retrieve task uri from previous fragments
+        Bundle args = getArguments();
+        String uri = args.getString(TASK_URI);
+        currentTaskUri = Uri.parse(uri);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -77,7 +105,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         Log.d(LOG_TAG, "onCreateView");
 
         // Inflate the layout for this fragment
-        rootView = inflater.inflate(R.layout.activity_task, container, false);
+        rootView = inflater.inflate(R.layout.editor_fragment_layout, container, false);
 
         setUpSubmitButton();
 
@@ -320,10 +348,6 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
                 change_detected = true;
             }
         });
-    }
-
-    public boolean hasChanged() {
-        return change_detected;
     }
 
     @Override

@@ -35,7 +35,7 @@ public class TaskCursorAdapter extends CursorAdapter {
 //        Log.d(LOG_TAG, "newView");
 
         // Create new row view
-        View view = LayoutInflater.from(context).inflate(R.layout.item_task, parent, false);
+        View view = LayoutInflater.from(context).inflate(R.layout.list_item_layout, parent, false);
 
         // Bind view holder to view
         TaskViewHolder taskViewHolder = new TaskViewHolder(view);

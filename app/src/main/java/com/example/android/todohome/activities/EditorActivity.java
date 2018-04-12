@@ -1,15 +1,14 @@
 package com.example.android.todohome.activities;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.example.android.todohome.R;
 import com.example.android.todohome.fragments.EditorFragment;
-import com.example.android.todohome.fragments.WarningDialogFragment;
 
 public class EditorActivity extends AppCompatActivity {
 
@@ -23,14 +22,21 @@ public class EditorActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(LOG_TAG, "onCreate");
-        setContentView(R.layout.fragment_container);
+        setContentView(R.layout.editor_activity_layout);
+
+        // Extract the task uri from the intent
+        Uri uri = getIntent().getData();
 
         Log.d(LOG_TAG, "savedInstanceState == null");
 
         if (savedInstanceState == null) {
+
+            // Create EditorFragment and add task uri
+            EditorFragment editorFragment = EditorFragment.newInstance(uri);
+
             // Add EditorFragment to this Activity
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-            fragmentTransaction.add(R.id.container, new EditorFragment(), FRAGMENT_TAG);
+            fragmentTransaction.add(R.id.editor_fragment_container_port, editorFragment, FRAGMENT_TAG);
             fragmentTransaction.commit();
         }
     }
