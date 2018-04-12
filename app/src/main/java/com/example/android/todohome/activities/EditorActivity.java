@@ -22,14 +22,6 @@ public class EditorActivity extends AppCompatActivity implements EditorFragment.
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-//        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-//            // If the screen is now in landscape mode, we can show the
-//            // dialog in-line with the list so we don't need this activity.
-//            finish();
-//            return;
-//        }
-
-
         Log.d(LOG_TAG, "onCreate");
         setContentView(R.layout.editor_activity_layout);
 
@@ -45,6 +37,7 @@ public class EditorActivity extends AppCompatActivity implements EditorFragment.
 
         Log.d(LOG_TAG, "savedInstanceState == null");
 
+        // only add the EditorFragment the first time this Activity is created
         if (savedInstanceState == null) {
 
             // Create EditorFragment and add task uri
@@ -57,6 +50,10 @@ public class EditorActivity extends AppCompatActivity implements EditorFragment.
         }
     }
 
+    /**
+     * Delegates handling the back press to the EditorFragment, which knows
+     * whether or not the user needs to be warned about unsaved changes.
+     */
     @Override
     public void onBackPressed() {
         EditorFragment editorFragment = (EditorFragment) getSupportFragmentManager().findFragmentByTag(FRAGMENT_TAG);
@@ -93,11 +90,17 @@ public class EditorActivity extends AppCompatActivity implements EditorFragment.
         Log.d(LOG_TAG, "onSaveInstanceState()");
     }
 
+    /**
+     * Called by the EditorFragment after a task has been saved.
+     */
     @Override
     public void onTaskSaved() {
         finish();
     }
 
+    /**
+     * Called by the EditorFragment after a task has been deleted.
+     */
     @Override
     public void onTaskDeleted() {
         finish();

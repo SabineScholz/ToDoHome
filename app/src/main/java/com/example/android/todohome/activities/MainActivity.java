@@ -1,7 +1,9 @@
 package com.example.android.todohome.activities;
 
+import android.app.AlertDialog;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -12,7 +14,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 
 import com.example.android.todohome.R;
 import com.example.android.todohome.fragments.EditorFragment;
@@ -21,8 +22,6 @@ import com.example.android.todohome.model.TaskContract;
 import com.example.android.todohome.model.TaskCursorAdapter;
 
 
-
-// TODO integrate editor menu with main menu
 // TODO finish language settings
 // TODO add due date
 // TODO put listview in listfragment
@@ -43,7 +42,6 @@ import com.example.android.todohome.model.TaskCursorAdapter;
  * The MainActivity contains both the TaskListFragment and the EditorFragment side-by-side.
  * The EditorActivity is not used.
  * <p>
- * The Menu action are handled by the MainActivity.
  */
 public class MainActivity extends AppCompatActivity implements TaskListFragment.OnTaskListActionListener, EditorFragment.OnEditorActionListener {
 
@@ -58,24 +56,11 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
     // Reference to the EditorFragment
     private EditorFragment editorFragment;
 
-    // whether or not the activity is in two-pane mode
-    private boolean twoPane;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(LOG_TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_container);
-
-        // check whether we are in portrait or landscape orientation
-        if (findViewById(R.id.editor_fragment_container_land) != null) {
-            twoPane = true;
-            Log.d(LOG_TAG, "twoPane = true");
-        } else {
-            twoPane = false;
-//            invalidateOptionsMenu();
-            Log.d(LOG_TAG, "twoPane = false");
-        }
 
         // Get a reference on the TaskListFragment (which is present in two-pane and one-pane mode)
         taskListFragment = (TaskListFragment) getFragmentManager().findFragmentById(R.id.list_fragment_container);
@@ -85,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
     @Override
     protected void onResumeFragments() {
         Log.d(LOG_TAG, "onResumeFragments");
-        if(getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land) != null) {
+        if (getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land) != null) {
             Log.d(LOG_TAG, "removed editorFragment");
             getSupportFragmentManager()
                     .beginTransaction().
@@ -217,14 +202,42 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
 
     @Override
     public void onCreateTask() {
-
+        /**
+         * possible scenarios:
+         * 1. one-pane view: no need to check for unsaved changes, because the EditorFragment
+         * was shown in another Activity, which controlled saving changes itself --> no EditorFragment
+         * 2. two-pane view:
+         * 2a: only list is shown:
+         * - no need to check for unsaved changes --> no EditorFragment
+         * 2b: list + editor are shown
+         * - editor could be empty --> EditorFragment, but no unsaved changes
+         * - editor could contain saved data --> EditorFragment, but no unsaved changes
+         * - editor could contain unsaved data --> EditorFragment, unsaved changes --> show Dialog
+         *
+         * Steps:
+         * 1. check whether there is an EditorFragment (if not, proceed with creating task)
+         * 2. ask the EditorFragment whether there are unsaved changes
+         * 3. if yes, show dialog. if no, proceed with creating task.
+         * 4. dialog: dismiss the dialog or proceed with replacing the current EditorFragment with an empty one
+         * in the callback methods of the dialog
+         */
         Log.d(LOG_TAG, "onCreateTask");
+        // check whether there is an EditorFragment and whether it contains unsaved changes
+        if (hasEditorFragment() && editorFragment.hasChangeDetected()) {
+            // Ask user on how to proceed (discard changes vs. cancel)
+            showUnsavedChangesDialogBeforeCreate();
+        } else {
+            // Create a new EditorFragment in which a new task can be created
+            openCreateTaskFragment();
+        }
+    }
 
+    private void openCreateTaskFragment() {
+        Log.d(LOG_TAG, "openCreateTaskFragment");
         // Check whether we are in portrait or landscape mode by
         // checking whether there is a fragment container for the EditorFragment in
         // our layout
-        View editorFrame = findViewById(R.id.editor_fragment_container_land);
-        if (editorFrame != null) {
+        if (hasTwoPaneMode()) {
             Log.d(LOG_TAG, "landscape mode");
             // landscape mode
 
@@ -250,17 +263,78 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
         }
     }
 
+    private void showUnsavedChangesDialogBeforeCreate() {
+        Log.d(LOG_TAG, "showUnsavedChangesDialogBeforeCreate");
+
+        // ask the user if he wants to discard the changes or cancel the action
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.warning_message);
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                Log.d(LOG_TAG, "cancel");
+            }
+        });
+        builder.setPositiveButton(R.string.discard_changes, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                Log.d(LOG_TAG, "discard changes");
+                if (dialog != null) {
+                    editorFragment.setChangeDetected(false);
+                    openCreateTaskFragment();
+                }
+            }
+        });
+        builder.setCancelable(false);
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+
     @Override
     public void onEditTask(long id) {
-
         Log.d(LOG_TAG, "onEditTask");
+        // Check whether the EditorFragment contains unsaved changes
+        if (hasEditorFragment() && editorFragment.hasChangeDetected()) {
+            showUnsavedChangesDialogBeforeEdit(id);
+        } else {
+            openEditTaskFragment(id);
+        }
+    }
 
+    private void showUnsavedChangesDialogBeforeEdit(final long id) {
+        Log.d(LOG_TAG, "showUnsavedChangesDialogBeforeEdit");
+        // ask the user if he wants to discard the changes or cancel the up navigation
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.warning_message);
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                Log.d(LOG_TAG, "cancel");
+            }
+        });
+        builder.setPositiveButton(R.string.discard_changes, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int idDialog) {
+                Log.d(LOG_TAG, "discard changes");
+                if (dialog != null) {
+                    editorFragment.setChangeDetected(false);
+                    openEditTaskFragment(id);
+                }
+            }
+        });
+        builder.setCancelable(false);
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    private void openEditTaskFragment(long id) {
+        Log.d(LOG_TAG, "openEditTaskFragment");
         // Create task uri
         Uri uri = ContentUris.withAppendedId(TaskContract.TaskEntry.CONTENT_URI, id);
 
         // Check whether we are in two-pane mode
-        if (twoPane) {
-            // two-pane mode
+        if (hasTwoPaneMode()) {
+            Log.d(LOG_TAG, "landscape mode");
+            // landscape mode
 
             // create EditorFragment and add the task uri
             editorFragment = EditorFragment.newInstance(uri);
@@ -273,7 +347,8 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
                     .commit();
 
         } else {
-            // one-pane mode
+            // portrait mode
+            Log.d(LOG_TAG, "portrait mode");
 
             // Start EditorActivity
             // Add the task uri to the intent.
@@ -285,11 +360,24 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
 
     @Override
     public void onTaskSaved() {
-        // do nothing
+        // do nothing?
     }
 
     @Override
     public void onTaskDeleted() {
-        // do nothing
+        if (getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land) != null) {
+            Log.d(LOG_TAG, "removed editorFragment");
+            getSupportFragmentManager()
+                    .beginTransaction().
+                    remove(getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land)).commit();
+        }
+    }
+
+    private boolean hasTwoPaneMode() {
+        return findViewById(R.id.editor_fragment_container_land) != null;
+    }
+
+    private boolean hasEditorFragment() {
+        return getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land) != null;
     }
 }

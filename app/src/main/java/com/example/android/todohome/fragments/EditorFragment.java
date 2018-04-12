@@ -56,7 +56,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
     private OnEditorActionListener onEditorActionListener;
 
     private View rootView;
-    private boolean change_detected;
+    private boolean changeDetected;
 
     // Content URI for the existing task (null if the task is null and we are in insert mode)
     private Uri currentTaskUri;
@@ -68,8 +68,8 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
 
         @Override
         public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            change_detected = true;
-            Log.d(LOG_TAG, "onTextChanged");
+            changeDetected = true;
+            Log.d(LOG_TAG, "onTextChanged " + charSequence);
         }
 
         @Override
@@ -122,7 +122,6 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         }
     }
 
-    // TODO move activity-dependent methods in OnActivityCreated
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -213,12 +212,13 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
                 // Otherwise, the insertion was successful and we can display a toast.
                 Toast.makeText(getContext(), getContext().getString(R.string.editor_insert_task_successful), Toast.LENGTH_SHORT).show();
             }
+            changeDetected = false;
         } else {
 
             // edit mode
 
             // Update the existing task only if changes have taken place
-            if (change_detected) {
+            if (changeDetected) {
                 Log.d(LOG_TAG, "updated uri: " + currentTaskUri);
                 int updatedRows = getContext().getContentResolver().update(currentTaskUri, values, null, null);
 
@@ -231,6 +231,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
                     Toast.makeText(getContext(), getContext().getString(R.string.editor_update_task_successful), Toast.LENGTH_SHORT).show();
                 }
             }
+            changeDetected = false;
         }
     }
 
@@ -255,6 +256,8 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
                 onLoaderReset(null);
             }
         }
+        changeDetected = false;
+
         // Inform activity that we're done
         onEditorActionListener.onTaskDeleted();
     }
@@ -287,6 +290,8 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Log.d(LOG_TAG, "onOptionsItemSelected");
+        Log.d(LOG_TAG, "changeDetected: " + changeDetected);
         switch (item.getItemId()) {
             case android.R.id.home:
                 showExitConfirmationDialog();
@@ -325,7 +330,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
     }
 
     public void showExitConfirmationDialog() {
-        if (change_detected) {
+        if (changeDetected) {
             // ask the user if he wants to discard the changes or cancel the up navigation
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage(R.string.warning_message);
@@ -337,7 +342,11 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
             builder.setPositiveButton(R.string.discard_changes, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     Log.d(LOG_TAG, "discard changes");
-                    NavUtils.navigateUpFromSameTask(getActivity());
+                    if (dialog != null) {
+                        changeDetected = false;
+                        // navigate up
+                        NavUtils.navigateUpFromSameTask(getActivity());
+                    }
                 }
             });
             builder.setCancelable(false);
@@ -361,7 +370,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         doneCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                change_detected = true;
+                changeDetected = true;
                 Log.d(LOG_TAG, "doneCheckBox onCheckedChanged");
             }
         });
@@ -417,7 +426,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         descriptionEditText.setText(description);
         creationDateTextView.setText(formatDate(creationDate));
 
-        change_detected = false;
+        changeDetected = false;
     }
 
     @Override
@@ -426,6 +435,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         descriptionEditText.setText(null);
         creationDateTextView.setText(null);
         doneCheckBox.setChecked(false);
+        changeDetected = false;
     }
 
 
@@ -434,6 +444,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         super.onStop();
         Log.d(LOG_TAG, "onStop()");
     }
+
 
     @Override
     public void onStart() {
@@ -467,12 +478,18 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         return formatter.format(calendar.getTime());
     }
 
+    public boolean hasChangeDetected() {
+        return changeDetected;
+    }
+
+    public void setChangeDetected(boolean changeDetected) {
+        this.changeDetected = changeDetected;
+    }
+
     public interface OnEditorActionListener {
         void onTaskSaved();
 
         void onTaskDeleted();
-
-        void setTitle(int stringId);
     }
 
 }

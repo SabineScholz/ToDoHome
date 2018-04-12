@@ -48,31 +48,6 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.Chec
 
     private OnTaskListActionListener mListener;
 
-//    public TaskListFragment() {
-//        // Required empty public constructor
-//    }
-
-//    /**
-//     * Use this factory method to create a new instance of
-//     * this fragment using the provided parameters.
-//     */
-//    public static TaskListFragment newInstance() {
-//        TaskListFragment fragment = new TaskListFragment();
-//        return fragment;
-//    }
-
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-
-
-
-
-    }
-
-
     /**
      * The system calls this when it's time for the fragment to
      * draw its user interface for the first time.
@@ -137,8 +112,6 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.Chec
             }
         });
 
-
-
         taskCursorAdapter.setFilterQueryProvider(new FilterQueryProvider() {
             @Override
             public Cursor runQuery(CharSequence constraint) {
@@ -155,8 +128,6 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.Chec
 
         // Initialize loader that fetches data from the database
         getLoaderManager().initLoader(LOADER_ID, null, this);
-
-
         return rootView;
     }
 
