@@ -21,7 +21,8 @@ import com.example.android.todohome.fragments.TaskListFragment;
 import com.example.android.todohome.model.TaskContract;
 import com.example.android.todohome.model.TaskCursorAdapter;
 
-
+// TODO combine create and edit task method incl. dialog methods
+// TODO combine dialogs of this activity with those of the EditorFragment
 // TODO finish language settings
 // TODO add due date
 // TODO put listview in listfragment
@@ -203,17 +204,6 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
     @Override
     public void onCreateTask() {
         /**
-         * possible scenarios:
-         * 1. one-pane view: no need to check for unsaved changes, because the EditorFragment
-         * was shown in another Activity, which controlled saving changes itself --> no EditorFragment
-         * 2. two-pane view:
-         * 2a: only list is shown:
-         * - no need to check for unsaved changes --> no EditorFragment
-         * 2b: list + editor are shown
-         * - editor could be empty --> EditorFragment, but no unsaved changes
-         * - editor could contain saved data --> EditorFragment, but no unsaved changes
-         * - editor could contain unsaved data --> EditorFragment, unsaved changes --> show Dialog
-         *
          * Steps:
          * 1. check whether there is an EditorFragment (if not, proceed with creating task)
          * 2. ask the EditorFragment whether there are unsaved changes
