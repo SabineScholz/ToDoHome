@@ -16,16 +16,17 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.example.android.todohome.R;
+import com.example.android.todohome.adapter.TaskCursorAdapter;
 import com.example.android.todohome.fragments.EditorFragment;
 import com.example.android.todohome.fragments.TaskListFragment;
 import com.example.android.todohome.model.TaskContract;
-import com.example.android.todohome.adapter.TaskCursorAdapter;
 
-
+// TODO confirmation delete all
 // TODO is it okay to perform a manual query while there is a CursorLoader? (in the TaskListFragment filter)
 // TODO how to filter best? currently, MainActivity calls filter() on the TaskListFragment, which in turn calls filter on the adapter
 // TODO combine create and edit task method incl. dialog methods
 // TODO combine dialogs of this activity with those of the EditorFragment
+// TODO create TaskListFragment via newInstance
 // TODO finish language settings
 // TODO add due date
 // TODO put listview in listfragment
@@ -41,20 +42,27 @@ import com.example.android.todohome.adapter.TaskCursorAdapter;
 /**
  * This Activity is going to contain either one or two Fragments, depending on whether
  * the device is in portrait or landscape mode.
- *
+ * <p>
  * Portrait mode:
- * The MainActivity contains only the TaskListFragment that shows the list of tasks.
- * To create a new task or to edit an existing one,
- * the EditorActivity incl. the EditorFragment is started.
- *
+ *      The MainActivity contains only the TaskListFragment that shows the list of tasks.
+ *      To create a new task or to edit an existing one,
+ *      the EditorActivity incl. the EditorFragment is started.
+ * <p>
  * Landscape:
- * The MainActivity contains both the TaskListFragment and the EditorFragment side-by-side.
- * The EditorActivity is not used.
+ *      The MainActivity contains both the TaskListFragment and the EditorFragment side-by-side.
+ *      The EditorActivity is not used.
  *
- * The MainActivity implements the following interfaces:
+ * ---------------------------------------------------------
+ * This Activity implements the following interfaces:
+ *
  * TaskListFragment.OnListActionListener:
- *      The TaskListFragments communicates with the MainActivity through the methods
+ *      The TaskListFragment communicates with the MainActivity through the methods
  *      of this interface (onEditTask(), onCreateTask())
+ *
+ * EditorFragment.OnEditorActionListener:
+ *      The EditorFragment communicates with the MainActivity through the methods
+ *      of this interface (onSaveTask(), onDeleteTask())
+ *
  *
  */
 public class MainActivity extends AppCompatActivity implements TaskListFragment.OnListActionListener, EditorFragment.OnEditorActionListener {
@@ -69,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
     private EditorFragment editorFragment;
 
     // Tag for the EditorFragment
-    private static final String EDITOR_FRAGMENT_TAG = "editorTaskFragment";
+    private static final String EDITOR_FRAGMENT_TAG = "editorFragment";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,7 +94,6 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
         // Get a reference on the TaskListFragment (which is present in two-pane and one-pane mode)
         taskListFragment = (TaskListFragment) getFragmentManager().findFragmentById(R.id.list_fragment_container);
     }
-
 
 
     @Override
@@ -431,8 +438,7 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
     }
 
 
-
-    // Lifecycle callback methods (only used for debugging)
+    // ----------------------- Debugging methods ------------------------------
 
     @Override
     protected void onStop() {

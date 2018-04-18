@@ -90,19 +90,16 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.Chec
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
         Log.d(LOG_TAG, "onCreateView");
 
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.list_fragment_layout, container, false);
 
-        // Find references for the subviews
+        // Obtain references of the views in the layout
         findReferences();
 
-        // Create an adapter to display task objects in the ListView.
-        // The TaskCursorAdapter needs someone who implements the checkboxClickListener.
-        // This Fragment does implement this interface, so hand over "this".
-        taskCursorAdapter = new TaskCursorAdapter(getActivity(), null, this);
+        // Set up the CursorAdapter (incl. setting up its filter)
+        setUpCursorAdapter();
 
         // Attach adapter to ListView
         taskListView.setAdapter(taskCursorAdapter);
@@ -113,6 +110,21 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.Chec
         // Set click listeners on the items of the list view
         // and on the "create task" button
         setClickListeners();
+
+        // Initialize loader that fetches data from the database
+        getLoaderManager().initLoader(LOADER_ID, null, this);
+
+        return rootView;
+    }
+
+    /**
+     * Create the TaskCursorAdapter and provide it with a filter.
+     */
+    private void setUpCursorAdapter() {
+        // Create an adapter to display task objects in the ListView.
+        // The TaskCursorAdapter needs someone who implements the checkboxClickListener.
+        // This Fragment does implement this interface, so hand over "this".
+        taskCursorAdapter = new TaskCursorAdapter(getActivity(), null, this);
 
         // Set a filter on the CursorAdapter. This filter allows
         // us to show unfinished tasks vs. all tasks.
@@ -136,11 +148,6 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.Chec
                 }
             }
         });
-
-        // Initialize loader that fetches data from the database
-        getLoaderManager().initLoader(LOADER_ID, null, this);
-
-        return rootView;
     }
 
     /**
@@ -260,9 +267,8 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.Chec
     }
 
 
-    /*
-     Loader callback methods
-     */
+     // -------------------------- Loader callback methods ----------------------------
+
 
     /**
      * Called after the initialization of the loader.
@@ -327,6 +333,23 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.Chec
         outState.putInt("curChoice", currentCheckPosition);
     }
 
+
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment.
+     * Currently, the MainActivity is the (only) parent activity of
+     * the TaskListFragment and must therefore implement this interface.
+     */
+    public interface OnListActionListener {
+        // Called when the user clicks on the "create task" button
+        void onCreateTask();
+
+        // Called when the user clicks on a task in the list to edit the task
+        void onEditTask(long id);
+    }
+
+
+    // ----------------------- Debugging methods ------------------------------
     @Override
     public void onStop() {
         Log.d(LOG_TAG, "onStop");
@@ -343,20 +366,5 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.Chec
     public void onResume() {
         Log.d(LOG_TAG, "onResume");
         super.onResume();
-    }
-
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment.
-     * Currently, the MainActivity is the (only) parent activity of
-     * the TaskListFragment and must therefore implement this interface.
-     */
-    public interface OnListActionListener {
-        // Called when the user clicks on the "create task" button
-        void onCreateTask();
-
-        // Called when the user clicks on a task in the list to edit the task
-        void onEditTask(long id);
     }
 }

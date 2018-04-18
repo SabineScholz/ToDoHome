@@ -15,9 +15,6 @@ import android.widget.TextView;
 import com.example.android.todohome.R;
 import com.example.android.todohome.model.TaskContract;
 
-/**
- * Created by Sabine on 27.03.2018.
- */
 
 public class TaskCursorAdapter extends CursorAdapter {
 
