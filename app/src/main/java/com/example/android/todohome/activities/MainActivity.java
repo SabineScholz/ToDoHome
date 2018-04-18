@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -16,7 +17,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.example.android.todohome.R;
-import com.example.android.todohome.adapter.TaskCursorAdapter;
 import com.example.android.todohome.fragments.EditorFragment;
 import com.example.android.todohome.fragments.TaskListFragment;
 import com.example.android.todohome.model.TaskContract;
@@ -44,26 +44,24 @@ import com.example.android.todohome.model.TaskContract;
  * the device is in portrait or landscape mode.
  * <p>
  * Portrait mode:
- *      The MainActivity contains only the TaskListFragment that shows the list of tasks.
- *      To create a new task or to edit an existing one,
- *      the EditorActivity incl. the EditorFragment is started.
+ * The MainActivity contains only the TaskListFragment that shows the list of tasks.
+ * To create a new task or to edit an existing one,
+ * the EditorActivity incl. the EditorFragment is started.
  * <p>
  * Landscape:
- *      The MainActivity contains both the TaskListFragment and the EditorFragment side-by-side.
- *      The EditorActivity is not used.
- *
+ * The MainActivity contains both the TaskListFragment and the EditorFragment side-by-side.
+ * The EditorActivity is not used.
+ * <p>
  * ---------------------------------------------------------
  * This Activity implements the following interfaces:
- *
+ * <p>
  * TaskListFragment.OnListActionListener:
- *      The TaskListFragment communicates with the MainActivity through the methods
- *      of this interface (onEditTask(), onCreateTask())
- *
+ * The TaskListFragment communicates with the MainActivity through the methods
+ * of this interface (onEditTask(), onCreateTask())
+ * <p>
  * EditorFragment.OnEditorActionListener:
- *      The EditorFragment communicates with the MainActivity through the methods
- *      of this interface (onSaveTask(), onDeleteTask())
- *
- *
+ * The EditorFragment communicates with the MainActivity through the methods
+ * of this interface (onSaveTask(), onDeleteTask())
  */
 public class MainActivity extends AppCompatActivity implements TaskListFragment.OnListActionListener, EditorFragment.OnEditorActionListener {
 
@@ -132,18 +130,16 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
             case R.id.menu_item_all_tasks:
                 // delegate filtering to the TaskListFragment
                 taskListFragment.setFilter(TaskListFragment.SHOW_ALL);
-//                taskListFragment.filter(TaskCursorAdapter.SHOW_ALL);
                 return true;
             case R.id.menu_item_unfinished_tasks:
                 // delegate filtering to the TaskListFragment
                 taskListFragment.setFilter(TaskListFragment.SHOW_UNFINISHED);
-//                taskListFragment.filter(TaskCursorAdapter.SHOW_UNFINISHED);
                 return true;
             case R.id.menu_item_delete_finished_tasks:
-                deleteFinishedTasks();
+                showDeleteFinishedConfirmationDialog();
                 return true;
             case R.id.menu_item_delete_all_tasks:
-                deleteAllTasks();
+                showDeleteAllConfirmationDialog();
                 return true;
             case R.id.menu_item_settings:
                 startSettingsActivity();
@@ -215,6 +211,64 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
         Log.d(LOG_TAG, "deletedRows: " + deletedRows);
     }
 
+    /**
+     * This Dialog lets the user confirm that he indeed wants to delete all tasks.
+     */
+    private void showDeleteAllConfirmationDialog() {
+        // Check whether there are tasks to be deleted. If not, exit.
+        if (!taskListFragment.hasTasks()) return;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.alert_delete_all_tasks);
+        builder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                // User wants to indeed delete the task.
+                deleteAllTasks();
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Cancel" button, so dismiss the dialog
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    /**
+     * This Dialog lets the user confirm that he indeed wants to delete the finished tasks.
+     */
+    private void showDeleteFinishedConfirmationDialog() {
+        // Check whether there are finished tasks to be deleted. If not, exit.
+        if (!taskListFragment.hasFinishedTasks()) return;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.alert_delete_finished_tasks);
+        builder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                // User wants to indeed delete the task.
+                deleteFinishedTasks();
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Cancel" button, so dismiss the dialog
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
 
     /**
      * Called when the floating action button
@@ -232,7 +286,7 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
          */
         Log.d(LOG_TAG, "onCreateTask");
         // check whether there is an EditorFragment and whether it contains unsaved changes
-        if (hasEditorFragment() && editorFragment.hasChangeDetected()) {
+        if (editorFragment != null && editorFragment.hasChangeDetected()) {
             // Ask user on how to proceed (discard changes vs. cancel)
             showUnsavedChangesDialogBeforeCreate();
         } else {
@@ -312,6 +366,49 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
         alertDialog.show();
     }
 
+    /**
+     * Handles the user's back press
+     */
+    @Override
+    public void onBackPressed() {
+        Log.d(LOG_TAG, "onBackPressed");
+        if (editorFragment != null && editorFragment.hasChangeDetected()) {
+            showExitConfirmationDialog();
+        } else {
+            Log.d(LOG_TAG, "finish");
+            finish();
+        }
+    }
+
+    /**
+     * Is shown when the user wants to leave the activity despite unsaved changes.
+     */
+    public void showExitConfirmationDialog() {
+        // ask the user if he wants to discard the changes or cancel the up navigation
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.warning_message);
+        builder.setPositiveButton(R.string.discard_changes, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                Log.d(LOG_TAG, "discard changes");
+                if (dialog != null) {
+                    // user wants to leave, so we can forget about any unsaved changes
+                    editorFragment.setChangeDetected(false);
+                    finish();
+                }
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // do nothing, stay in the current activity
+                Log.d(LOG_TAG, "cancel"); // TODO dialog.dismiss()?
+            }
+        });
+        builder.setCancelable(false);
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
 
     /**
      * Called when the user clicks on a task item in the list
@@ -321,7 +418,7 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
     public void onEditTask(long id) {
         Log.d(LOG_TAG, "onEditTask");
         // check whether there is an EditorFragment and whether it contains unsaved changes
-        if (hasEditorFragment() && editorFragment.hasChangeDetected()) {
+        if (editorFragment != null && editorFragment.hasChangeDetected()) {
             // warn the user that there are unsaved changes
             // add id, so that the dialog callback methods can start the editor with this id
             showUnsavedChangesDialogBeforeEdit(id);
@@ -427,7 +524,8 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
      * Checks whether there is an EditorFragment in the current UI
      */
     private boolean hasEditorFragment() {
-        return getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land) != null;
+//        return getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land) != null;
+        return getSupportFragmentManager().findFragmentByTag(EDITOR_FRAGMENT_TAG) != null;
     }
 
 

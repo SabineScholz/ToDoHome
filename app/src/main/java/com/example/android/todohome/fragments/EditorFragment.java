@@ -219,8 +219,11 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
     private void saveTask() {
         Log.d(LOG_TAG, "saveTask");
 
-        // Check whether a name is provided. If not, return.
-        if (TextUtils.isEmpty(nameEditText.getText())) return;
+        // Check whether a name is provided. If not, inform the user and return.
+        if (TextUtils.isEmpty(nameEditText.getText())) {
+            Toast.makeText(getContext(), R.string.missing_name, Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         // Create a ContentValues object form the data in the views
         ContentValues contentValues = getDataFromViews();

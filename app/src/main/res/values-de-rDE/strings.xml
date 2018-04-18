@@ -11,7 +11,6 @@
     <string name="warning_message">Änderungen verwerfen?</string>
     <string name="label_done">Erledigt</string>
     <string name="editor_activity_title_edit_task">Aufgabe bearbeiten</string>
-    <string name="settings_language_english_value">Englisch</string>
     <string name="settings_language_english_label">Englisch</string>
     <string name="editor_insert_task_failed">Fehler beim Hinzufügen der Aufgabe</string>
     <string name="editor_update_task_failed">"Fehler beim Ändern der Aufgabe "</string>
@@ -31,4 +30,7 @@
     <string name="delete">Löschen</string>
     <string name="editor_delete_task_failed">Fehler beim Löschen der Aufgabe</string>
     <string name="editor_delete_task_successful">Aufgabe gelöscht</string>
+    <string name="alert_delete_all_tasks">Alle Aufgaben löschen?</string>
+    <string name="alert_delete_finished_tasks">Alle erledigten Aufgaben löschen?</string>
+    <string name="missing_name">Name fehlt</string>
 </resources>

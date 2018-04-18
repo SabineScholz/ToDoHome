@@ -331,6 +331,9 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.onCh
         taskCursorAdapter.changeCursor(null);
     }
 
+
+
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -343,7 +346,19 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.onCh
         Log.d(LOG_TAG, "saved task filter: " + currentTaskFilter);
     }
 
+    public boolean hasTasks() {
+        // get the number of tasks
+        Cursor cursor = getContext().getContentResolver().query(TaskContract.TaskEntry.CONTENT_URI, null, null, null, null);
+        return cursor.getCount() != 0;
+    }
 
+    public boolean hasFinishedTasks() {
+        // get the number of finished tasks
+        String selection = TaskContract.TaskEntry.COLUMN_TASK_DONE + " = ?";
+        String[] selectionArgs = new String[]{String.valueOf(TaskContract.TaskEntry.DONE_YES)};
+        Cursor cursor = getContext().getContentResolver().query(TaskContract.TaskEntry.CONTENT_URI, null, selection, selectionArgs, null);
+        return cursor.getCount() != 0;
+    }
 
 
     /**
