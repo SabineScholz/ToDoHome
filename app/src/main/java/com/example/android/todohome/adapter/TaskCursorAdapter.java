@@ -24,9 +24,7 @@ public class TaskCursorAdapter extends CursorAdapter {
     // Tag for log messages
     private static final String LOG_TAG = TaskCursorAdapter.class.getSimpleName() + " TEST";
 
-    // Filter options
-    public static final CharSequence SHOW_UNFINISHED = "0";
-    public static final CharSequence SHOW_ALL = "1";
+
 
     // Reference to activity or fragment that implements the onCheckboxClickListener interface
     private onCheckboxClickListener onCheckboxClickListener;

@@ -131,11 +131,13 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
                 return true;
             case R.id.menu_item_all_tasks:
                 // delegate filtering to the TaskListFragment
-                taskListFragment.filter(TaskCursorAdapter.SHOW_ALL);
+                taskListFragment.setFilter(TaskListFragment.SHOW_ALL);
+//                taskListFragment.filter(TaskCursorAdapter.SHOW_ALL);
                 return true;
             case R.id.menu_item_unfinished_tasks:
                 // delegate filtering to the TaskListFragment
-                taskListFragment.filter(TaskCursorAdapter.SHOW_UNFINISHED);
+                taskListFragment.setFilter(TaskListFragment.SHOW_UNFINISHED);
+//                taskListFragment.filter(TaskCursorAdapter.SHOW_UNFINISHED);
                 return true;
             case R.id.menu_item_delete_finished_tasks:
                 deleteFinishedTasks();

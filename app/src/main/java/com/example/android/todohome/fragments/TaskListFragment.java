@@ -16,7 +16,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.FilterQueryProvider;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -44,6 +43,12 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.onCh
 
     // ID of the loader that fetches the data for the listview
     public static final int LOADER_ID = 0;
+
+    // Key to access the current task filter in the bundle (saved in onSaveInstanceState)
+    private static final String KEY_TASK_FILTER = "1";
+
+    // Current task filter
+    private int currentTaskFilter;
 
     // Position of the task that was clicked
     // (kept across the lifecycle by saving it to a bundle in onSaveInstanceState)
@@ -79,6 +84,12 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.onCh
     // parent activity via the interface methods without knowing the Activity itself.
     private OnListActionListener onListActionListener;
 
+
+
+    // Filter options
+    public static final int SHOW_UNFINISHED = 0;
+    public static final int SHOW_ALL = 1;
+
     /**
      * The system calls this when it's time for the fragment to
      * draw its user interface for the first time.
@@ -98,8 +109,10 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.onCh
         // Obtain references of the views in the layout
         findReferences();
 
-        // Set up the CursorAdapter (incl. setting up its filter)
-        setUpCursorAdapter();
+        // Create an adapter to display task objects in the ListView.
+        // The TaskCursorAdapter needs someone who implements the checkboxClickListener.
+        // This Fragment does implement this interface, so hand over "this".
+        taskCursorAdapter = new TaskCursorAdapter(getActivity(), null, this);
 
         // Attach adapter to ListView
         taskListView.setAdapter(taskCursorAdapter);
@@ -111,43 +124,20 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.onCh
         // and on the "create task" button
         setClickListeners();
 
+        // if the Fragment is created for the first time, set the task filter
+        // to show all tasks
+        if(savedInstanceState == null) {
+            currentTaskFilter = SHOW_ALL;
+        } else {
+            // obtain the restored task filter
+            currentTaskFilter = savedInstanceState.getInt(KEY_TASK_FILTER);
+            Log.d(LOG_TAG, "restored task filter: " + currentTaskFilter);
+        }
+
         // Initialize loader that fetches data from the database
         getLoaderManager().initLoader(LOADER_ID, null, this);
 
         return rootView;
-    }
-
-    /**
-     * Create the TaskCursorAdapter and provide it with a filter.
-     */
-    private void setUpCursorAdapter() {
-        // Create an adapter to display task objects in the ListView.
-        // The TaskCursorAdapter needs someone who implements the checkboxClickListener.
-        // This Fragment does implement this interface, so hand over "this".
-        taskCursorAdapter = new TaskCursorAdapter(getActivity(), null, this);
-
-        // Set a filter on the CursorAdapter. This filter allows
-        // us to show unfinished tasks vs. all tasks.
-        taskCursorAdapter.setFilterQueryProvider(new FilterQueryProvider() {
-            @Override
-            public Cursor runQuery(CharSequence constraint) {
-                Log.d(LOG_TAG, "Filter");
-                if (constraint == TaskCursorAdapter.SHOW_UNFINISHED) {
-
-                    // Execute query to obtain only unfinished tasks
-                    String selection = TaskContract.TaskEntry.COLUMN_TASK_DONE + " = ?";
-                    String[] selectionArgs = new String[]{String.valueOf(TaskContract.TaskEntry.DONE_NO)};
-                    Cursor cursor = getActivity().getContentResolver().query(TaskContract.TaskEntry.CONTENT_URI, null, selection, selectionArgs, null);
-
-                    // Return the cursor containing the unfinished tasks
-                    return cursor;
-                } else {
-
-                    // Return the cursor containing all tasks
-                    return getActivity().getContentResolver().query(TaskContract.TaskEntry.CONTENT_URI, null, null, null, null);
-                }
-            }
-        });
     }
 
     /**
@@ -266,6 +256,17 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.onCh
         }
     }
 
+    public void setFilter(int filterCode) {
+        Log.d(LOG_TAG, "setFilter: " + filterCode);
+
+        // Set the filter code
+        currentTaskFilter = filterCode;
+
+        // Restart the loader to apply the filtering
+        Log.d(LOG_TAG, "restartLoader");
+        getLoaderManager().restartLoader(LOADER_ID, null, this);
+    }
+
 
      // -------------------------- Loader callback methods ----------------------------
 
@@ -283,16 +284,30 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.onCh
         // we still need to load the data
         progressBar.setVisibility(View.VISIBLE);
 
+        // Construct the selection depending on the filter options
+        String selection = null;
+        String[] selectionArgs = null;
+        switch (currentTaskFilter) {
+            case (SHOW_ALL):
+                // leave selection and selectionArgs at null (get all tasks)
+                break;
+            case (SHOW_UNFINISHED):
+                selection = TaskContract.TaskEntry.COLUMN_TASK_DONE + " = ?";
+                selectionArgs = new String[]{String.valueOf(TaskContract.TaskEntry.DONE_NO)};
+                break;
+        }
+
         // Check whether the current loader_id matches the one
         // we initialized the loader with
         switch (loader_id) {
             case LOADER_ID:
                 // Return cursor loader that queries the task provider for the entire task table (no projection or selection)
-                return new CursorLoader(getActivity().getApplicationContext(), TaskContract.TaskEntry.CONTENT_URI, null, null, null, null);
+                return new CursorLoader(getActivity().getApplicationContext(), TaskContract.TaskEntry.CONTENT_URI, null, selection, selectionArgs, null);
             default:
                 return null;
         }
     }
+
 
     /**
      * Called when the Loader has finished loading.
@@ -316,22 +331,19 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.onCh
         taskCursorAdapter.changeCursor(null);
     }
 
-    /**
-     * Perform filtering on the task list.
-     * @param constraint contains the filter criteria
-     */
-    public void filter(CharSequence constraint) {
-        // Delegate the actual filtering to the TaskCursorAdapter
-        taskCursorAdapter.getFilter().filter(constraint);
-    }
-
-
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+        Log.d(LOG_TAG, "onSaveInstanceState");
         // Save the list position of the task that was clicked on
-        outState.putInt("curChoice", currentCheckPosition);
+//        outState.putInt("curChoice", currentCheckPosition);
+
+        // Save the current task filter
+        outState.putInt(KEY_TASK_FILTER, currentTaskFilter);
+        Log.d(LOG_TAG, "saved task filter: " + currentTaskFilter);
     }
+
+
 
 
     /**

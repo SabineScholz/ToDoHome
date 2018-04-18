@@ -217,6 +217,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
      * Saves or updates a task.
      */
     private void saveTask() {
+        Log.d(LOG_TAG, "saveTask");
 
         // Check whether a name is provided. If not, return.
         if (TextUtils.isEmpty(nameEditText.getText())) return;
@@ -226,6 +227,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
 
         // Check whether we are in edit or insert mode
         if (editMode()) {
+            Log.d(LOG_TAG, "editMode");
             // edit mode
 
             // Check whether the user made any changes to the current task
@@ -247,31 +249,32 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
 
                 // Reset the changeDetected flag (all changes have been saved)
                 changeDetected = false;
-            } else {
-                // insert mode
-
-                Log.d(LOG_TAG, "saveTask, currentTime: " + currentTime);
-
-                // Add the current time to the content values
-                contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_CREATION_DATE, currentTime);
-
-                // Insert a new task, get the uri for the new task.
-                Uri newTaskUri = getContext().getContentResolver().insert(TaskContract.TaskEntry.CONTENT_URI, contentValues);
-
-                // Show a toast message depending on whether or not the insertion was successful
-                if (newTaskUri == null) {
-                    // If the new content URI is null, then there was an error with insertion.
-                    Toast.makeText(getContext(), getContext().getString(R.string.editor_insert_task_failed), Toast.LENGTH_SHORT).show();
-                } else {
-                    // Otherwise, the insertion was successful and we can display a toast.
-                    Toast.makeText(getContext(), getContext().getString(R.string.editor_insert_task_successful), Toast.LENGTH_SHORT).show();
-                }
-
-                // Reset the changeDetected flag (all changes have been saved)
-                changeDetected = false;
             }
+        } else {
+            // insert mode
+            Log.d(LOG_TAG, "insertMode");
+            Log.d(LOG_TAG, "saveTask, currentTime: " + currentTime);
+
+            // Add the current time to the content values
+            contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_CREATION_DATE, currentTime);
+
+            // Insert a new task, get the uri for the new task.
+            Uri newTaskUri = getContext().getContentResolver().insert(TaskContract.TaskEntry.CONTENT_URI, contentValues);
+
+            // Show a toast message depending on whether or not the insertion was successful
+            if (newTaskUri == null) {
+                // If the new content URI is null, then there was an error with insertion.
+                Toast.makeText(getContext(), getContext().getString(R.string.editor_insert_task_failed), Toast.LENGTH_SHORT).show();
+            } else {
+                // Otherwise, the insertion was successful and we can display a toast.
+                Toast.makeText(getContext(), getContext().getString(R.string.editor_insert_task_successful), Toast.LENGTH_SHORT).show();
+            }
+
+            // Reset the changeDetected flag (all changes have been saved)
+            changeDetected = false;
         }
     }
+
 
     /**
      * Create a content values object form the data in the views.
@@ -498,6 +501,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
 
     /**
      * Called when the Loader has finished loading.
+     *
      * @param loader the current loader
      * @param cursor cursor containing loaded data
      */
@@ -541,6 +545,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
 
     /**
      * Called when the loader is reset. Clears all views in the editor.
+     *
      * @param loader
      */
     @Override
@@ -554,6 +559,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
 
     /**
      * Formats a date (in ms) to a String
+     *
      * @param currentTime
      * @return
      */
@@ -587,6 +593,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
      */
     public interface OnEditorActionListener {
         void onTaskSaved();
+
         void onTaskDeleted();
     }
 
