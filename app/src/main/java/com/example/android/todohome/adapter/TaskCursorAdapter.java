@@ -1,4 +1,4 @@
-package com.example.android.todohome.model;
+package com.example.android.todohome.adapter;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -12,6 +12,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.android.todohome.R;
+import com.example.android.todohome.model.TaskContract;
 
 /**
  * Created by Sabine on 27.03.2018.

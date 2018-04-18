@@ -10,7 +10,6 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,29 +23,57 @@ import android.widget.Toast;
 
 import com.example.android.todohome.R;
 import com.example.android.todohome.model.TaskContract;
-import com.example.android.todohome.model.TaskCursorAdapter;
+import com.example.android.todohome.adapter.TaskCursorAdapter;
 
 /**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link OnTaskListActionListener} interface
- * to handle interaction events.
+ * This Fragment contains the list of tasks (ListView).
+ *
+ * Interfaces:
+ * The interface "TaskCursorAdapter.CheckboxClickListener" is implemented to
+ * be notified when the user clicks on the "done"-checkbox of a task in the list (via the onCheckboxClick callback method)
+ *
+ * The interface LoaderManager.LoaderCallbacks<Cursor> is implemented to
+ * be notified when the CursorLoader is created (onCreateLoader),
+ * has finished loading (onLoadFinished) or needs to be reset (onLoaderReset).
+ * The CursorLoader provides "fresh" Cursors when the data in the database have changed.
+ * The CursorAdapter will then receive the "fresh" Cursor.
+ *
  */
 public class TaskListFragment extends Fragment implements TaskCursorAdapter.CheckboxClickListener, LoaderManager.LoaderCallbacks<Cursor> {
 
     // ID of the loader that fetches the data for the listview
     public static final int LOADER_ID = 0;
 
+    // Position of the task that was clicked
+    // (kept across the lifecycle by saving it to a bundle in onSaveInstanceState)
+    // not used yet!
     private int currentCheckPosition = 0;
 
     // Tag for log messages
     private static final String LOG_TAG = TaskListFragment.class.getSimpleName() + " TEST";
+
+    // Reference to the CursorAdapter of the ListView
     private TaskCursorAdapter taskCursorAdapter;
+
+    // Reference to the ListView that shows a list of tasks
     private ListView taskListView;
+
+    // Reference to the ProgressBar that is shown while the data is loading
     private ProgressBar progressBar;
+
+    // Reference to the View that is shown when the ListView is empty
+    private View emptyView;
+
+    // Reference to the root View of this Fragment's layout
+    // Without this reference, we would need to ask the parent activity for
+    // our views
     private View rootView;
 
-    private OnTaskListActionListener mListener;
+    // Activity that implements the OnListActionListener interface.
+    // This interface must be implemented by all Activities containing
+    // this Fragment. This allows the Fragment to communicate with its
+    // parent activity via the interface methods without knowing the Activity itself.
+    private OnListActionListener onListActionListener;
 
     /**
      * The system calls this when it's time for the fragment to
@@ -55,11 +82,6 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.Chec
      * View from this method that is the root of your fragment's layout.
      * You can return null if the fragment does not provide a UI.
      * (https://developer.android.com/guide/components/fragments.html)
-     *
-     * @param inflater
-     * @param container
-     * @param savedInstanceState
-     * @return
      */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -70,57 +92,74 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.Chec
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.list_fragment_layout, container, false);
 
-        // Obtain references of the views in the layout
-        // Find a reference to the ListView in the layout
-        taskListView = rootView.findViewById(R.id.list_view);
+        // Find references for the subviews
+        findReferences();
 
-        // Create an adapter to display task objects in the ListView
+        // Create an adapter to display task objects in the ListView.
+        // The TaskCursorAdapter needs someone who implements the checkboxClickListener.
+        // This Fragment does implement this interface, so hand over "this".
         taskCursorAdapter = new TaskCursorAdapter(getActivity(), null, this);
 
         // Attach adapter to ListView
         taskListView.setAdapter(taskCursorAdapter);
 
-        // Find and set empty view on the ListView, so that it only shows when the list has 0 items.
-        View emptyView = rootView.findViewById(R.id.empty_view);
+        // Set empty view on the ListView, so that it only shows when the list has 0 items.
+
         taskListView.setEmptyView(emptyView);
 
+        // Find a reference to the ProgressBar and set its visibility to visible, because
+        // the data have not been loaded yet
         progressBar = rootView.findViewById(R.id.progress_bar);
         progressBar.setVisibility(View.VISIBLE);
 
-        // Set a click listener on the listview that is triggered when
+        // Set a click listener on the ListView that is triggered when
         // someone clicks on an item in the list
         taskListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 Log.d(LOG_TAG, "Click on list item with id " + id);
-                if (mListener != null) {
-                    mListener.onEditTask(id);
+                if (onListActionListener != null) {
+                    // Notify the onListActionListener that the user
+                    // wants to edit the task with this id.
+                    onListActionListener.onEditTask(id);
                 }
             }
         });
 
-        // Set listener on "add new task" button
+        // Find a reference to the "create task" button
         FloatingActionButton addNewTaskButton = rootView.findViewById(R.id.add_new_button);
+
+        // Set click listener on "create task" button
         addNewTaskButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.d(LOG_TAG, "add new task");
-                // Let the parent activity take care of opening the editor
-                if (mListener != null) {
-                    mListener.onCreateTask();
+                if (onListActionListener != null) {
+                    // Notify the onListActionListener that the user
+                    // wants to create a new task.
+                    onListActionListener.onCreateTask();
                 }
             }
         });
 
+        // Set a filter on the CursorAdapter. This filter allows
+        // us to show unfinished tasks vs. all tasks.
         taskCursorAdapter.setFilterQueryProvider(new FilterQueryProvider() {
             @Override
             public Cursor runQuery(CharSequence constraint) {
                 Log.d(LOG_TAG, "Filter");
                 if (constraint == TaskCursorAdapter.SHOW_UNFINISHED) {
+
+                    // Execute query to obtain only unfinished tasks
                     String selection = TaskContract.TaskEntry.COLUMN_TASK_DONE + " = ?";
                     String[] selectionArgs = new String[]{String.valueOf(TaskContract.TaskEntry.DONE_NO)};
-                    return getActivity().getContentResolver().query(TaskContract.TaskEntry.CONTENT_URI, null, selection, selectionArgs, null);
+                    Cursor cursor = getActivity().getContentResolver().query(TaskContract.TaskEntry.CONTENT_URI, null, selection, selectionArgs, null);
+
+                    // Return the cursor containing the unfinished tasks
+                    return cursor;
                 } else {
+
+                    // Return the cursor containing all tasks
                     return getActivity().getContentResolver().query(TaskContract.TaskEntry.CONTENT_URI, null, null, null, null);
                 }
             }
@@ -131,11 +170,21 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.Chec
         return rootView;
     }
 
+    private void findReferences() {
+
+        // Find a reference to the ListView in the layout
+        taskListView = rootView.findViewById(R.id.list_view);
+
+        // Find a reference to the View that is shown when the ListView is empty
+        emptyView = rootView.findViewById(R.id.empty_view);
+
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnTaskListActionListener) {
-            mListener = (OnTaskListActionListener) context;
+        if (context instanceof OnListActionListener) {
+            onListActionListener = (OnListActionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -145,7 +194,7 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.Chec
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+        onListActionListener = null;
     }
 
     /**
@@ -247,12 +296,11 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.Chec
      * fragment to allow an interaction in this fragment to be communicated
      * to the activity and potentially other fragments contained in that
      * activity.
-     * <p>
      * See the Android Training lesson <a href=
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnTaskListActionListener {
+    public interface OnListActionListener {
         void onCreateTask();
         void onEditTask(long id);
     }
