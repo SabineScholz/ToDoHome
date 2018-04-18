@@ -26,18 +26,19 @@ import com.example.android.todohome.model.TaskContract;
 import com.example.android.todohome.adapter.TaskCursorAdapter;
 
 /**
- * This Fragment contains the list of tasks (ListView).
+ * This Fragment contains the list of tasks and a button to create new tasks.
  *
  * Interfaces:
  * The interface "TaskCursorAdapter.CheckboxClickListener" is implemented to
- * be notified when the user clicks on the "done"-checkbox of a task in the list (via the onCheckboxClick callback method)
+ * be notified when the user clicks on the "done"-checkbox of a task in the list
+ * (via the onCheckboxClick callback method)
  *
  * The interface LoaderManager.LoaderCallbacks<Cursor> is implemented to
  * be notified when the CursorLoader is created (onCreateLoader),
  * has finished loading (onLoadFinished) or needs to be reset (onLoaderReset).
  * The CursorLoader provides "fresh" Cursors when the data in the database have changed.
  * The CursorAdapter will then receive the "fresh" Cursor.
- *
+ * The ListView will then be updated to contain the display the fresh data.
  */
 public class TaskListFragment extends Fragment implements TaskCursorAdapter.CheckboxClickListener, LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -68,6 +69,9 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.Chec
     // Without this reference, we would need to ask the parent activity for
     // our views
     private View rootView;
+
+    // Reference to the "create task" button
+    private FloatingActionButton addNewTaskButton;
 
     // Activity that implements the OnListActionListener interface.
     // This interface must be implemented by all Activities containing
@@ -104,43 +108,11 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.Chec
         taskListView.setAdapter(taskCursorAdapter);
 
         // Set empty view on the ListView, so that it only shows when the list has 0 items.
-
         taskListView.setEmptyView(emptyView);
 
-        // Find a reference to the ProgressBar and set its visibility to visible, because
-        // the data have not been loaded yet
-        progressBar = rootView.findViewById(R.id.progress_bar);
-        progressBar.setVisibility(View.VISIBLE);
-
-        // Set a click listener on the ListView that is triggered when
-        // someone clicks on an item in the list
-        taskListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                Log.d(LOG_TAG, "Click on list item with id " + id);
-                if (onListActionListener != null) {
-                    // Notify the onListActionListener that the user
-                    // wants to edit the task with this id.
-                    onListActionListener.onEditTask(id);
-                }
-            }
-        });
-
-        // Find a reference to the "create task" button
-        FloatingActionButton addNewTaskButton = rootView.findViewById(R.id.add_new_button);
-
-        // Set click listener on "create task" button
-        addNewTaskButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.d(LOG_TAG, "add new task");
-                if (onListActionListener != null) {
-                    // Notify the onListActionListener that the user
-                    // wants to create a new task.
-                    onListActionListener.onCreateTask();
-                }
-            }
-        });
+        // Set click listeners on the items of the list view
+        // and on the "create task" button
+        setClickListeners();
 
         // Set a filter on the CursorAdapter. This filter allows
         // us to show unfinished tasks vs. all tasks.
@@ -167,9 +139,46 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.Chec
 
         // Initialize loader that fetches data from the database
         getLoaderManager().initLoader(LOADER_ID, null, this);
+
         return rootView;
     }
 
+    /**
+     * Sets click listeners on the items of the list view
+     * and on the "create task" button
+     */
+    private void setClickListeners() {
+        // Set a click listener on the ListView that is triggered when
+        // someone clicks on an item in the list
+        taskListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                Log.d(LOG_TAG, "Click on list item with id " + id);
+                if (onListActionListener != null) {
+                    // Notify the onListActionListener that the user
+                    // wants to edit the task with this id.
+                    onListActionListener.onEditTask(id);
+                }
+            }
+        });
+
+        // Set click listener on "create task" button
+        addNewTaskButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d(LOG_TAG, "add new task");
+                if (onListActionListener != null) {
+                    // Notify the onListActionListener that the user
+                    // wants to create a new task.
+                    onListActionListener.onCreateTask();
+                }
+            }
+        });
+    }
+
+    /**
+     * Finds references to the views in this Fragment's layout
+     */
     private void findReferences() {
 
         // Find a reference to the ListView in the layout
@@ -178,19 +187,36 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.Chec
         // Find a reference to the View that is shown when the ListView is empty
         emptyView = rootView.findViewById(R.id.empty_view);
 
+        // Find a reference to the ProgressBar
+        progressBar = rootView.findViewById(R.id.progress_bar);
+
+        // Find a reference to the "create task" button
+        addNewTaskButton = rootView.findViewById(R.id.add_new_button);
+
     }
 
+    /**
+     * This is called when this Fragment is attached to its
+     * parent activity (= context).
+     * @param context the parent activity
+     */
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        // Make sure the parent activity implements the OnListActionListener
+        // whose methods we use to communicate with the activity
         if (context instanceof OnListActionListener) {
             onListActionListener = (OnListActionListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnListActionListener");
         }
     }
 
+    /**
+     * Called when this Fragment is detached from its
+     * parent activity.
+     */
     @Override
     public void onDetach() {
         super.onDetach();
@@ -198,19 +224,28 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.Chec
     }
 
     /**
-     * Is called when the "done"-checkbox is clicked in the list view. Updates the task in
+     * Is called when the "done"-checkbox of a task is clicked in the list view. Updates the task in
      * the database accordingly.
+     * This method belongs to the TaskCursorAdapter.CheckboxClickListener interface.
+     * @param clickedTaskIndex id of the task whose checkbox was clicked
+     * @param taskDone boolean that indicates whether the task is done (true) or not (false)
      */
     @Override
     public void onCheckboxClick(long clickedTaskIndex, boolean taskDone) {
         Log.d(LOG_TAG, "onCheckboxClick, task index: " + clickedTaskIndex);
+
+        // Construct the uri of the task whose checkbox was clicked
         Uri uri = ContentUris.withAppendedId(TaskContract.TaskEntry.CONTENT_URI, clickedTaskIndex);
+
+        // Put the information of whether or not the task is done in a ContentValues object
         ContentValues contentValues = new ContentValues();
         if (taskDone) {
             contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_DONE, TaskContract.TaskEntry.DONE_YES);
         } else {
             contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_DONE, TaskContract.TaskEntry.DONE_NO);
         }
+
+        // Update the task in the database
         Log.d(LOG_TAG, "updated uri: " + uri);
         int updatedRows = getActivity().getContentResolver().update(uri, contentValues, null, null);
 
@@ -224,43 +259,26 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.Chec
         }
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt("curChoice", currentCheckPosition);
-    }
 
-    @Override
-    public void onStop() {
-        Log.d(LOG_TAG, "onStop");
-        super.onStop();
-    }
+    /*
+     Loader callback methods
+     */
 
     /**
-     * The system calls this method as the first indication
-     * that the user is leaving the fragment (though it doesn't always mean
-     * the fragment is being destroyed). This is usually where you
-     * should commit any changes that should be persisted beyond the
-     * current user session (because the user might not come back).
-     * (https://developer.android.com/guide/components/fragments.html)
+     * Called after the initialization of the loader.
+     * Returns a CursorLoader that fetches task data from the
+     * database.
      */
-    @Override
-    public void onPause() {
-        Log.d(LOG_TAG, "onPause");
-        super.onPause();
-    }
-
-    @Override
-    public void onResume() {
-        Log.d(LOG_TAG, "onResume");
-        super.onResume();
-    }
-
     @Override
     public Loader<Cursor> onCreateLoader(int loader_id, Bundle bundle) {
         Log.d(LOG_TAG, "onCreateLoader");
+
+        // Set the visibility of the ProgressBar to visible, because
+        // we still need to load the data
         progressBar.setVisibility(View.VISIBLE);
 
+        // Check whether the current loader_id matches the one
+        // we initialized the loader with
         switch (loader_id) {
             case LOADER_ID:
                 // Return cursor loader that queries the task provider for the entire task table (no projection or selection)
@@ -270,6 +288,11 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.Chec
         }
     }
 
+    /**
+     * Called when the Loader has finished loading.
+     * @param loader the current loader
+     * @param cursor cursor containing loaded data
+     */
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         Log.d(LOG_TAG, "onLoadFinished");
@@ -287,21 +310,53 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.Chec
         taskCursorAdapter.changeCursor(null);
     }
 
+    /**
+     * Perform filtering on the task list.
+     * @param constraint contains the filter criteria
+     */
     public void filter(CharSequence constraint) {
+        // Delegate the actual filtering to the TaskCursorAdapter
         taskCursorAdapter.getFilter().filter(constraint);
     }
 
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // Save the list position of the task that was clicked on
+        outState.putInt("curChoice", currentCheckPosition);
+    }
+
+    @Override
+    public void onStop() {
+        Log.d(LOG_TAG, "onStop");
+        super.onStop();
+    }
+
+    @Override
+    public void onPause() {
+        Log.d(LOG_TAG, "onPause");
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        Log.d(LOG_TAG, "onResume");
+        super.onResume();
+    }
+
+
     /**
      * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
+     * fragment.
+     * Currently, the MainActivity is the (only) parent activity of
+     * the TaskListFragment and must therefore implement this interface.
      */
     public interface OnListActionListener {
+        // Called when the user clicks on the "create task" button
         void onCreateTask();
+
+        // Called when the user clicks on a task in the list to edit the task
         void onEditTask(long id);
     }
 }

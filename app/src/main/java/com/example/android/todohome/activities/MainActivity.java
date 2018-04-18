@@ -23,6 +23,7 @@ import com.example.android.todohome.adapter.TaskCursorAdapter;
 
 
 // TODO is it okay to perform a manual query while there is a CursorLoader? (in the TaskListFragment filter)
+// TODO how to filter best? currently, MainActivity calls filter() on the TaskListFragment, which in turn calls filter on the adapter
 // TODO combine create and edit task method incl. dialog methods
 // TODO combine dialogs of this activity with those of the EditorFragment
 // TODO finish language settings
@@ -39,16 +40,22 @@ import com.example.android.todohome.adapter.TaskCursorAdapter;
 
 /**
  * This Activity is going to contain either one or two Fragments, depending on whether
- * the app is running on a smartphone or a tablet.
- * <p>
- * Smartphone:
+ * the device is in portrait or landscape mode.
+ *
+ * Portrait mode:
  * The MainActivity contains only the TaskListFragment that shows the list of tasks.
- * To create a new task or to edit an existing one, the EditorActivity incl. the EditorFragment is started using an Intent.
- * <p>
- * Tablet:
+ * To create a new task or to edit an existing one,
+ * the EditorActivity incl. the EditorFragment is started.
+ *
+ * Landscape:
  * The MainActivity contains both the TaskListFragment and the EditorFragment side-by-side.
  * The EditorActivity is not used.
- * <p>
+ *
+ * The MainActivity implements the following interfaces:
+ * TaskListFragment.OnListActionListener:
+ *      The TaskListFragments communicates with the MainActivity through the methods
+ *      of this interface (onEditTask(), onCreateTask())
+ *
  */
 public class MainActivity extends AppCompatActivity implements TaskListFragment.OnListActionListener, EditorFragment.OnEditorActionListener {
 

@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CursorAdapter;
+import android.widget.FilterQueryProvider;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -30,6 +31,7 @@ public class TaskCursorAdapter extends CursorAdapter {
         this.checkboxClickListener = checkboxClickListener;
         Log.d(LOG_TAG, "TaskCursorAdapter()");
     }
+
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
