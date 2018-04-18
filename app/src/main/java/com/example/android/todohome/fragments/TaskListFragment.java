@@ -29,7 +29,7 @@ import com.example.android.todohome.adapter.TaskCursorAdapter;
  * This Fragment contains the list of tasks and a button to create new tasks.
  *
  * Interfaces:
- * The interface "TaskCursorAdapter.CheckboxClickListener" is implemented to
+ * The interface "TaskCursorAdapter.onCheckboxClickListener" is implemented to
  * be notified when the user clicks on the "done"-checkbox of a task in the list
  * (via the onCheckboxClick callback method)
  *
@@ -40,7 +40,7 @@ import com.example.android.todohome.adapter.TaskCursorAdapter;
  * The CursorAdapter will then receive the "fresh" Cursor.
  * The ListView will then be updated to contain the display the fresh data.
  */
-public class TaskListFragment extends Fragment implements TaskCursorAdapter.CheckboxClickListener, LoaderManager.LoaderCallbacks<Cursor> {
+public class TaskListFragment extends Fragment implements TaskCursorAdapter.onCheckboxClickListener, LoaderManager.LoaderCallbacks<Cursor> {
 
     // ID of the loader that fetches the data for the listview
     public static final int LOADER_ID = 0;
@@ -233,7 +233,7 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.Chec
     /**
      * Is called when the "done"-checkbox of a task is clicked in the list view. Updates the task in
      * the database accordingly.
-     * This method belongs to the TaskCursorAdapter.CheckboxClickListener interface.
+     * This method belongs to the TaskCursorAdapter.onCheckboxClickListener interface.
      * @param clickedTaskIndex id of the task whose checkbox was clicked
      * @param taskDone boolean that indicates whether the task is done (true) or not (false)
      */
