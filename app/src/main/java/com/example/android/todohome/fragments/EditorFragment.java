@@ -174,7 +174,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         doneCheckBox = rootView.findViewById(R.id.done_checkbox);
         creationDateTextView = rootView.findViewById(R.id.creation_date);
 
-        // display the current date in the creation date task view
+        // display the current date in the creation date task view //TODO overwrite old date?
         currentTime = System.currentTimeMillis();
         creationDateTextView.setText(formatDate(currentTime));
 
@@ -222,7 +222,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         // Check whether a name is provided. If not, inform the user and return.
         if (TextUtils.isEmpty(nameEditText.getText())) {
             Toast.makeText(getContext(), R.string.missing_name, Toast.LENGTH_SHORT).show();
-            return;
+            return; //TODO dont return, stay in editor
         }
 
         // Create a ContentValues object form the data in the views

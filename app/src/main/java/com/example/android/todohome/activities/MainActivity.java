@@ -21,18 +21,14 @@ import com.example.android.todohome.fragments.EditorFragment;
 import com.example.android.todohome.fragments.TaskListFragment;
 import com.example.android.todohome.model.TaskContract;
 
-// TODO confirmation delete all
-// TODO is it okay to perform a manual query while there is a CursorLoader? (in the TaskListFragment filter)
-// TODO how to filter best? currently, MainActivity calls filter() on the TaskListFragment, which in turn calls filter on the adapter
 // TODO combine create and edit task method incl. dialog methods
 // TODO combine dialogs of this activity with those of the EditorFragment
 // TODO create TaskListFragment via newInstance
 // TODO finish language settings
-// TODO add due date
+// TODO add due date + connect with alarm app / notifications
 // TODO put listview in listfragment
-// TODO connect with alarm app / notifications
 // TODO several list types (default, work, shopping, personal, wishlist, new list)
-// TODO share wishlist with others!
+// TODO share lists with others!
 // TODO within unfinished tasks view: if task is set to "done", it should slide to the right (use animations of recycler view?)
 // TODO open key board in editor immediately
 // TODO shifting task in list to the left / right + action (done in Android?)
