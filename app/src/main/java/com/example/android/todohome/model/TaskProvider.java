@@ -17,7 +17,7 @@ import static com.example.android.todohome.model.TaskContract.PATH_TASKS;
 
 public class TaskProvider extends ContentProvider {
 
-    public static final String LOG_TAG = TaskProvider.class.getSimpleName() + " TEST";
+    private static final String LOG_TAG = TaskProvider.class.getSimpleName() + " TEST";
 
     // Set up uri codes for uri matcher
     private static final int TASKS = 100;
@@ -52,7 +52,7 @@ public class TaskProvider extends ContentProvider {
 
         // Get readable database
         SQLiteDatabase db = taskDbHelper.getReadableDatabase();
-        Cursor cursor = null;
+        Cursor cursor;
 
         int uriCode = uriMatcher.match(uri);
 
@@ -147,11 +147,6 @@ public class TaskProvider extends ContentProvider {
 
     /**
      * Delete tasks matching the selection.
-     *
-     * @param uri
-     * @param selection
-     * @param selectionArgs
-     * @return number of deleted rows
      */
     @Override
     public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
@@ -211,7 +206,7 @@ public class TaskProvider extends ContentProvider {
     private int updateTask(Uri uri, ContentValues contentValues, String selection, String[] selectionArgs) {
 
         // If there are no values to update, then don't try to update the database
-        if (contentValues.size() == 0) {
+        if (contentValues == null || contentValues.size() == 0) {
             return 0;
         }
 

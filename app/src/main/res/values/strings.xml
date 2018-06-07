@@ -42,7 +42,6 @@
 
     <!-- strings for the settings activity -->
     <string name="settings_language_label">Language</string>
-    <string name="settings_language_key" translatable="false">language</string>
     <string name="settings_language_default" translatable="false">@string/settings_language_english_label</string>
 
     <string name="settings_language_english_value" translatable="false">english</string>
@@ -59,7 +58,6 @@
     <string name="delete">Delete</string>
 
     <string name="missing_name">Missing name</string>
-
-
+    <string name="image_description_beach_access">Umbrella</string>
 
 </resources>

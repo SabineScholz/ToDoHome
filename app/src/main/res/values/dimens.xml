@@ -2,12 +2,8 @@
 <resources>
     <!-- Height of each list item -->
     <dimen name="list_item_height">32dp</dimen>
-
     <dimen name="default_padding">8dp</dimen>
-
-
     <dimen name="default_text_size">14sp</dimen>
     <dimen name="fab_margin">16dp</dimen>
-
     <dimen name="floating_action_button_outer_size">56dp</dimen>
 </resources>

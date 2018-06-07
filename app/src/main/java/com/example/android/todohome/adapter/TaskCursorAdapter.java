@@ -26,10 +26,10 @@ public class TaskCursorAdapter extends CursorAdapter {
 
 
 
-    // Reference to activity or fragment that implements the onCheckboxClickListener interface
-    private onCheckboxClickListener onCheckboxClickListener;
+    // Reference to activity or fragment that implements the OnCheckboxClickListener interface
+    private OnCheckboxClickListener onCheckboxClickListener;
 
-    public TaskCursorAdapter(Context context, Cursor c, onCheckboxClickListener onCheckboxClickListener) {
+    public TaskCursorAdapter(Context context, Cursor c, OnCheckboxClickListener onCheckboxClickListener) {
         super(context, c, 0); // TODO flags = 0 okay?
         this.onCheckboxClickListener = onCheckboxClickListener;
         Log.d(LOG_TAG, "TaskCursorAdapter()");
@@ -84,7 +84,7 @@ public class TaskCursorAdapter extends CursorAdapter {
         private TextView nameTextView;
         private CheckBox checkBox;
 
-        public TaskViewHolder(View itemView) {
+        TaskViewHolder(View itemView) {
 //            Log.d(LOG_TAG, "TaskViewHolder()");
 
             // Find sub views of the row view
@@ -128,7 +128,7 @@ public class TaskCursorAdapter extends CursorAdapter {
         /**
          * Fills the sub views of the row view with data from a cursor.
          */
-        public void bind(Cursor cursor) {
+        void bind(Cursor cursor) {
 
             // Find the column indexes within the cursor
             int nameColumnIndex = cursor.getColumnIndex(TaskContract.TaskEntry.COLUMN_TASK_NAME);
@@ -153,7 +153,7 @@ public class TaskCursorAdapter extends CursorAdapter {
      * about clicks on the "done"-checkbox in a row view of the ListView
      * has to implement this interface.
      */
-    public interface onCheckboxClickListener {
+    public interface OnCheckboxClickListener {
         void onCheckboxClick(long clickedItemIndex, boolean taskDone);
     }
 }

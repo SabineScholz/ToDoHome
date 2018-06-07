@@ -9,7 +9,7 @@ public final class TaskContract {
     // Set name for the entire content provider
     public static final String CONTENT_AUTHORITY = "com.example.android.tasks";
 
-    public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
+    private static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
     // Set the path for the tasks table (appended to the base content uri)
     public static final String PATH_TASKS = "tasks";

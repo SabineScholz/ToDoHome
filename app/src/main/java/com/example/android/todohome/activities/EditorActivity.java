@@ -1,14 +1,19 @@
 package com.example.android.todohome.activities;
 
+import android.content.Intent;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.android.todohome.R;
 import com.example.android.todohome.fragments.EditorFragment;
+
+import java.net.URI;
 
 
 /**
@@ -17,7 +22,9 @@ import com.example.android.todohome.fragments.EditorFragment;
  * In landscape orientation, this Activity is not used, because the EditorFragment is
  * displayed in the MainActivity.
  * <p>
- * This Activity is used to 1. create tasks (insert mode) and 2. edit existing tasks (edit mode).
+ * This Activity is used to
+ *      1. create tasks (insert mode)
+ *      2. edit existing tasks (edit mode).
  * The mode is determined by checking whether the intent that started this
  * Activity contains a uri, in which case we are in edit mode.
  * <p>
@@ -36,6 +43,9 @@ public class EditorActivity extends AppCompatActivity implements EditorFragment.
     // Tag for the EditorFragment
     private static final String FRAGMENT_TAG = "editorFragment";
 
+    // Task URI
+    private Uri uri;
+
     /**
      * Called when the activity is first created.
      * This is where you should do all of your normal static set up:
@@ -43,8 +53,6 @@ public class EditorActivity extends AppCompatActivity implements EditorFragment.
      * you with a Bundle containing the activity's previously frozen state,
      * if there was one. Always followed by onStart().
      * (https://developer.android.com/reference/android/app/Activity.html)
-     *
-     * @param savedInstanceState
      */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -56,7 +64,7 @@ public class EditorActivity extends AppCompatActivity implements EditorFragment.
         setContentView(R.layout.editor_activity_layout);
 
         // Extract the task uri from the intent (null if we are in insert mode)
-        Uri uri = getIntent().getData();
+        uri = getIntent().getData();
 
         // Set activity title to reflect that we're in insert or edit mode
         if (uri == null) {
@@ -97,7 +105,6 @@ public class EditorActivity extends AppCompatActivity implements EditorFragment.
 
     /**
      * Called by the EditorFragment after a task has been saved.
-     * Finishes this Activity.
      */
     @Override
     public void onTaskSaved() {
@@ -111,6 +118,24 @@ public class EditorActivity extends AppCompatActivity implements EditorFragment.
     @Override
     public void onTaskDeleted() {
         finish();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        Log.d(LOG_TAG, "onConfigurationChanged");
+        super.onConfigurationChanged(newConfig);
+
+        // Checks the orientation of the screen
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show();
+            startMainActivity();
+        }
+    }
+
+    private void startMainActivity() {
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        intent.setData(uri);
+        startActivity(intent);
     }
 
 

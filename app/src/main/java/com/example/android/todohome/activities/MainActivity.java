@@ -8,8 +8,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -21,48 +21,44 @@ import com.example.android.todohome.fragments.EditorFragment;
 import com.example.android.todohome.fragments.TaskListFragment;
 import com.example.android.todohome.model.TaskContract;
 
-// TODO combine create and edit task method incl. dialog methods
-// TODO combine dialogs of this activity with those of the EditorFragment
-// TODO create TaskListFragment via newInstance
-// TODO finish language settings
-// TODO add due date + connect with alarm app / notifications
-// TODO put listview in listfragment
-// TODO several list types (default, work, shopping, personal, wishlist, new list)
-// TODO share lists with others!
-// TODO within unfinished tasks view: if task is set to "done", it should slide to the right (use animations of recycler view?)
-// TODO open key board in editor immediately
-// TODO shifting task in list to the left / right + action (done in Android?)
+import java.net.URI;
+
 // TODO while in editor: rotating --> stay in editor, keep data!
-// TODO note: res/layout-w1024dp for master/detail layout, no landscape option
 
 /**
- * This Activity is going to contain either one or two Fragments, depending on whether
- * the device is in portrait or landscape mode.
+ * This Activity contains either one or two Fragments, depending on whether
+ * the device is in portrait/one-pane or landscape/two-pane mode.
+ *
+ * Glossary:
+ *      TaskListFragment: contains the list of tasks
+ *      EditorFragment:   contains a form to enter the data for a new task or to
+ *                        edit the data of an existing task
  * <p>
  * Portrait mode:
- * The MainActivity contains only the TaskListFragment that shows the list of tasks.
- * To create a new task or to edit an existing one,
- * the EditorActivity incl. the EditorFragment is started.
+ *      The MainActivity contains only the TaskListFragment that shows the list of tasks.
+ *      To create a new task or to edit an existing one,
+ *      the EditorActivity incl. the EditorFragment is started.
  * <p>
- * Landscape:
- * The MainActivity contains both the TaskListFragment and the EditorFragment side-by-side.
- * The EditorActivity is not used.
+ * Landscape mode:
+ *      The MainActivity contains both the TaskListFragment and the EditorFragment side-by-side.
+ *      The EditorActivity is not used.
  * <p>
  * ---------------------------------------------------------
  * This Activity implements the following interfaces:
  * <p>
  * TaskListFragment.OnListActionListener:
- * The TaskListFragment communicates with the MainActivity through the methods
+ * The TaskListFragment communicates with the MainActivity via the methods
  * of this interface (onEditTask(), onCreateTask())
  * <p>
  * EditorFragment.OnEditorActionListener:
- * The EditorFragment communicates with the MainActivity through the methods
+ * The EditorFragment communicates with the MainActivity via the methods
  * of this interface (onSaveTask(), onDeleteTask())
  */
 public class MainActivity extends AppCompatActivity implements TaskListFragment.OnListActionListener, EditorFragment.OnEditorActionListener {
 
     // Tag for log messages
     private static final String LOG_TAG = MainActivity.class.getSimpleName() + " TEST";
+    private static final String TASK_ID = "1";
 
     // Reference to the TaskListFragment
     private TaskListFragment taskListFragment;
@@ -73,34 +69,36 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
     // Tag for the EditorFragment
     private static final String EDITOR_FRAGMENT_TAG = "editorFragment";
 
+    // id of the currently edited task
+    private long taskId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(LOG_TAG, "onCreate");
         super.onCreate(savedInstanceState);
 
+        if(savedInstanceState != null) {
+            Log.d(LOG_TAG, "recreate task id: " + savedInstanceState.getLong(TASK_ID));
+            taskId = savedInstanceState.getLong(TASK_ID);
+        }
+
         // Set the view for this Activity
         // There are two main_container layouts:
-        // portrait orientation: contains only the TaskListFragment
-        // landscape orientation: contains the TaskListFragment and
-        //      a container in which the EditorFragment can be dynamically placed
+        //      portrait orientation:   contains only the TaskListFragment (added statically)
+        //      landscape orientation:  contains the TaskListFragment (added statically) and
+        //                              a container in which the EditorFragment can be dynamically placed
         setContentView(R.layout.main_container);
 
-        // Get a reference on the TaskListFragment (which is present in two-pane and one-pane mode)
+        // Get a reference on the TaskListFragment (which is present in portrait and landscape mode)
         taskListFragment = (TaskListFragment) getFragmentManager().findFragmentById(R.id.list_fragment_container);
-    }
 
-
-    @Override
-    protected void onResumeFragments() {
-        Log.d(LOG_TAG, "onResumeFragments");
-        // remove the EditorFragment incl. its menu
-        if (getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land) != null) {
-            Log.d(LOG_TAG, "removed editorFragment");
-            getSupportFragmentManager()
-                    .beginTransaction().
-                    remove(getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land)).commit();
+        // Check whether the MainActivity was started by the EditorActivity due to a change from portrait to landscape mode
+        Uri uri = getIntent().getData();
+        if(uri != null) {
+            // MainActivity was started by the EditorActivity
+            // get task id to display task details in the EditorFragment
+            Log.d(LOG_TAG, "EditorActivity started MainActivity with uri " + uri.toString());
         }
-        super.onResumeFragments();
     }
 
     /**
@@ -137,26 +135,15 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
             case R.id.menu_item_delete_all_tasks:
                 showDeleteAllConfirmationDialog();
                 return true;
-            case R.id.menu_item_settings:
-                startSettingsActivity();
-                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
     /**
-     * Start the SettingsActivity with an explicit intent
+     * Insert dummy data (only for testing)
      */
-    private void startSettingsActivity() {
-        Intent intent = new Intent(this, SettingsActivity.class);
-        startActivity(intent);
-    }
-
-    /**
-     * Insert dummy data (only for debugging)
-     */
-    public void insertDummyData() {
+    private void insertDummyData() {
         ContentValues contentValues = new ContentValues();
         contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_NAME, "Groceries");
         contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_DESCRIPTION, "Doing groceries for the weekend");
@@ -194,7 +181,6 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
         int deletedRows = getContentResolver().delete(TaskContract.TaskEntry.CONTENT_URI, null, null);
         Log.d(LOG_TAG, "deletedRows: " + deletedRows);
     }
-
 
     /**
      * Delete finished tasks only
@@ -266,20 +252,18 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
     }
 
 
+      /*
+    ======================================================
+                        CREATING TASKS
+    ======================================================
+     */
+
     /**
      * Called when the floating action button
      * for creating a new task is clicked
      */
     @Override
     public void onCreateTask() {
-        /**
-         * Steps:
-         *  check whether there is an EditorFragment
-         *      if not, proceed with creating task)
-         *      if yes, ask the EditorFragment whether there are unsaved changes
-         *          if yes, show warning dialog.
-         *          if no, proceed with creating task.
-         */
         Log.d(LOG_TAG, "onCreateTask");
         // check whether there is an EditorFragment and whether it contains unsaved changes
         if (editorFragment != null && editorFragment.hasChangeDetected()) {
@@ -308,7 +292,6 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
             Log.d(LOG_TAG, "create EditorFragment");
 
             // Add the EditorFragment to the UI (replace existing fragment)
-            // TODO setTransition?
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.editor_fragment_container_land, editorFragment, EDITOR_FRAGMENT_TAG)
                     .commit();
@@ -362,48 +345,13 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
         alertDialog.show();
     }
 
-    /**
-     * Handles the user's back press
-     */
-    @Override
-    public void onBackPressed() {
-        Log.d(LOG_TAG, "onBackPressed");
-        if (editorFragment != null && editorFragment.hasChangeDetected()) {
-            showExitConfirmationDialog();
-        } else {
-            Log.d(LOG_TAG, "finish");
-            finish();
-        }
-    }
 
-    /**
-     * Is shown when the user wants to leave the activity despite unsaved changes.
+
+    /*
+    ======================================================
+                        EDITING TASKS
+    ======================================================
      */
-    public void showExitConfirmationDialog() {
-        // ask the user if he wants to discard the changes or cancel the up navigation
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(R.string.warning_message);
-        builder.setPositiveButton(R.string.discard_changes, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                Log.d(LOG_TAG, "discard changes");
-                if (dialog != null) {
-                    // user wants to leave, so we can forget about any unsaved changes
-                    editorFragment.setChangeDetected(false);
-                    finish();
-                }
-            }
-        });
-        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                // do nothing, stay in the current activity
-                Log.d(LOG_TAG, "cancel"); // TODO dialog.dismiss()?
-            }
-        });
-        builder.setCancelable(false);
-        // Create and show the AlertDialog
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
-    }
 
 
     /**
@@ -412,7 +360,8 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
      */
     @Override
     public void onEditTask(long id) {
-        Log.d(LOG_TAG, "onEditTask");
+        Log.d(LOG_TAG, "onEditTask id " + id);
+        taskId = id;
         // check whether there is an EditorFragment and whether it contains unsaved changes
         if (editorFragment != null && editorFragment.hasChangeDetected()) {
             // warn the user that there are unsaved changes
@@ -476,7 +425,6 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
             editorFragment = EditorFragment.newInstance(uri);
 
             // Add the EditorFragment to the UI
-            // TODO setTransition?
             getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.editor_fragment_container_land, editorFragment)
@@ -494,11 +442,60 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
         }
     }
 
+    /**
+     * Handles the user's back press
+     */
     @Override
-    public void onTaskSaved() {
-        // do nothing?
+    public void onBackPressed() {
+        Log.d(LOG_TAG, "onBackPressed");
+        if (editorFragment != null && editorFragment.hasChangeDetected()) {
+            showExitConfirmationDialog();
+        } else {
+            Log.d(LOG_TAG, "finish");
+            finish();
+        }
     }
 
+    /**
+     * Is shown when the user wants to leave the activity despite unsaved changes.
+     */
+    private void showExitConfirmationDialog() {
+        // ask the user if he wants to discard the changes or cancel the up navigation
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.warning_message);
+        builder.setPositiveButton(R.string.discard_changes, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                Log.d(LOG_TAG, "discard changes");
+                if (dialog != null) {
+                    // user wants to leave, so we can forget about any unsaved changes
+                    editorFragment.setChangeDetected(false);
+                    finish();
+                }
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // do nothing, stay in the current activity
+                Log.d(LOG_TAG, "cancel");
+            }
+        });
+        builder.setCancelable(false);
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    /**
+     * Called by the EditorFragment after a task has been saved
+     */
+    @Override
+    public void onTaskSaved() {
+        // do nothing
+    }
+
+    /**
+     * Called by the EditorFragment after a task has been deleted
+     */
     @Override
     public void onTaskDeleted() {
         if (getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land) != null) {
@@ -510,29 +507,43 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
     }
 
     /**
-     * Checks whether we are in one-pane (=portrait) or two-pane (landscape) mode
+     * Checks whether we are in one-pane (portrait) or two-pane (landscape) mode
      */
     private boolean hasTwoPaneMode() {
         return findViewById(R.id.editor_fragment_container_land) != null;
     }
 
     /**
-     * Checks whether there is an EditorFragment in the current UI
+     * Removes the EditorFragment (if present) when the Activity is restarted
      */
-    private boolean hasEditorFragment() {
-//        return getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land) != null;
-        return getSupportFragmentManager().findFragmentByTag(EDITOR_FRAGMENT_TAG) != null;
+    @Override
+    protected void onResumeFragments() {
+        Log.d(LOG_TAG, "onResumeFragments");
+
+        // remove the EditorFragment incl. its menu
+        if (getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land) != null) {
+            Log.d(LOG_TAG, "removed editorFragment");
+            getSupportFragmentManager()
+                    .beginTransaction().
+                    remove(getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land)).commit();
+
+            if(!hasTwoPaneMode()) {
+                // start EditorActivity
+                Log.d(LOG_TAG, "starting EditorActivity with task id " + taskId);
+                startEditingTask(taskId);
+            }
+        }
+        super.onResumeFragments();
     }
 
-
-    /**
-     * Will later be used to set the language
-     */
-    private void setUpSharedPreferences() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        // extract language setting and apply the language
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        Log.d(LOG_TAG, "onSaveInstanceState");
+        // Save the id of the currently edited task
+        outState.putLong(TASK_ID, taskId);
+        Log.d(LOG_TAG, "save task id to bundle: " + taskId);
+        super.onSaveInstanceState(outState);
     }
-
 
     // ----------------------- Debugging methods ------------------------------
 
@@ -552,5 +563,11 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
     protected void onResume() {
         Log.d(LOG_TAG, "onResume");
         super.onResume();
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.d(LOG_TAG, "onDestroy");
+        super.onDestroy();
     }
 }

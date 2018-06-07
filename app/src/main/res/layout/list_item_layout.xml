@@ -9,8 +9,7 @@
         android:id="@+id/checkbox"
         android:layout_width="wrap_content"
         android:layout_height="@dimen/list_item_height"
-        android:focusable="false"
-        android:paddingLeft="16dp" />
+        android:focusable="false" />
 
     <TextView
         android:id="@+id/name_text_view"

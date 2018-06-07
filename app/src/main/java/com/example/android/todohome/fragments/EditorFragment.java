@@ -36,11 +36,11 @@ import com.example.android.todohome.model.TaskContract;
 import java.text.DateFormat;
 import java.util.Calendar;
 
-// TODO delegate CRUD to activity?
-
 
 /**
- * The EditorFragment is used to 1. create tasks (insert mode) and 2. edit existing tasks (edit mode).
+ * The EditorFragment is used to
+ *      1. create tasks (insert mode)
+ *      2. edit existing tasks (edit mode).
  * The mode is determined by checking whether a uri was provided when creating the Fragment.
  * If a uri was provided, we are in edit mode.
  */
@@ -52,7 +52,6 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
     // ID of the loader that fetches the data of an existing task to be shown in the editor
     private static final int EDITOR_TASK_LOADER = 1;
 
-    // Fragment initialization parameter
     // Key for the task uri in the bundle
     private static final String TASK_URI = "task_uri";
 
@@ -127,8 +126,6 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
      * you want to retain when the fragment is paused or stopped, then resumed.
      * (https://developer.android.com/guide/components/fragments.html)
      * Called after onAttach() and before onCreateView().
-     *
-     * @param savedInstanceState
      */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -178,12 +175,12 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         currentTime = System.currentTimeMillis();
         creationDateTextView.setText(formatDate(currentTime));
 
-        // forgot why we need to check this
         if (savedInstanceState == null) {
             // init the CursorLoader only in edit mode
             if (editMode()) {
                 // Initialize loader that fetches data for the current task from the database
                 getLoaderManager().initLoader(EDITOR_TASK_LOADER, null, this);
+                Log.d(LOG_TAG, "getLoaderManager().initLoader");
             }
         }
 
@@ -206,9 +203,10 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
             @Override
             public void onClick(View view) {
                 // Save task to database
-                saveTask();
+                boolean saved = saveTask();
+
                 // Inform activity that we're done
-                onEditorActionListener.onTaskSaved();
+                if(saved) onEditorActionListener.onTaskSaved();
             }
         });
     }
@@ -216,13 +214,13 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
     /**
      * Saves or updates a task.
      */
-    private void saveTask() {
+    private boolean saveTask() {
         Log.d(LOG_TAG, "saveTask");
 
         // Check whether a name is provided. If not, inform the user and return.
-        if (TextUtils.isEmpty(nameEditText.getText())) {
+        if (TextUtils.isEmpty(nameEditText.getText().toString().trim())) {
             Toast.makeText(getContext(), R.string.missing_name, Toast.LENGTH_SHORT).show();
-            return; //TODO dont return, stay in editor
+            return false;
         }
 
         // Create a ContentValues object form the data in the views
@@ -276,6 +274,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
             // Reset the changeDetected flag (all changes have been saved)
             changeDetected = false;
         }
+        return true;
     }
 
 
@@ -336,7 +335,6 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         Log.d(LOG_TAG, "onCreateOptionsMenu");
         inflater.inflate(R.menu.menu_editor, menu);
     }
-
 
     /**
      * This method is called after invalidateOptionsMenu(), so that the
@@ -429,7 +427,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 // do nothing, stay in the current activity
-                Log.d(LOG_TAG, "cancel"); // TODO dialog.dismiss()?
+                Log.d(LOG_TAG, "cancel");
             }
         });
         builder.setCancelable(false);
@@ -548,8 +546,6 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
 
     /**
      * Called when the loader is reset. Clears all views in the editor.
-     *
-     * @param loader
      */
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
@@ -562,9 +558,6 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
 
     /**
      * Formats a date (in ms) to a String
-     *
-     * @param currentTime
-     * @return
      */
     private String formatDate(long currentTime) {
         Calendar calendar = Calendar.getInstance();

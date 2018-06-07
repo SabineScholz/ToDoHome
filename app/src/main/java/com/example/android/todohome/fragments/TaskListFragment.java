@@ -1,5 +1,6 @@
 package com.example.android.todohome.fragments;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.ContentUris;
@@ -28,7 +29,7 @@ import com.example.android.todohome.adapter.TaskCursorAdapter;
  * This Fragment contains the list of tasks and a button to create new tasks.
  *
  * Interfaces:
- * The interface "TaskCursorAdapter.onCheckboxClickListener" is implemented to
+ * The interface "TaskCursorAdapter.OnCheckboxClickListener" is implemented to
  * be notified when the user clicks on the "done"-checkbox of a task in the list
  * (via the onCheckboxClick callback method)
  *
@@ -37,23 +38,22 @@ import com.example.android.todohome.adapter.TaskCursorAdapter;
  * has finished loading (onLoadFinished) or needs to be reset (onLoaderReset).
  * The CursorLoader provides "fresh" Cursors when the data in the database have changed.
  * The CursorAdapter will then receive the "fresh" Cursor.
- * The ListView will then be updated to contain the display the fresh data.
+ * The ListView will then be updated the display the fresh data.
  */
-public class TaskListFragment extends Fragment implements TaskCursorAdapter.onCheckboxClickListener, LoaderManager.LoaderCallbacks<Cursor> {
+public class TaskListFragment extends Fragment implements TaskCursorAdapter.OnCheckboxClickListener, LoaderManager.LoaderCallbacks<Cursor> {
 
-    // ID of the loader that fetches the data for the listview
-    public static final int LOADER_ID = 0;
+    // ID of the loader that fetches the data for the ListView
+    private static final int LOADER_ID = 0;
 
     // Key to access the current task filter in the bundle (saved in onSaveInstanceState)
     private static final String KEY_TASK_FILTER = "1";
 
+    // Filter options
+    public static final int SHOW_UNFINISHED = 0;
+    public static final int SHOW_ALL = 1;
+
     // Current task filter
     private int currentTaskFilter;
-
-    // Position of the task that was clicked
-    // (kept across the lifecycle by saving it to a bundle in onSaveInstanceState)
-    // not used yet!
-    private int currentCheckPosition = 0;
 
     // Tag for log messages
     private static final String LOG_TAG = TaskListFragment.class.getSimpleName() + " TEST";
@@ -71,24 +71,18 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.onCh
     private View emptyView;
 
     // Reference to the root View of this Fragment's layout
-    // Without this reference, we would need to ask the parent activity for
-    // our views
+    // Without this reference, we would need to ask the parent activity for the child view
     private View rootView;
 
     // Reference to the "create task" button
     private FloatingActionButton addNewTaskButton;
 
-    // Activity that implements the OnListActionListener interface.
-    // This interface must be implemented by all Activities containing
-    // this Fragment. This allows the Fragment to communicate with its
-    // parent activity via the interface methods without knowing the Activity itself.
+    /* (Parent) Activity that implements the OnListActionListener interface.
+     This interface must be implemented by all Activities containing
+     this Fragment. This allows the Fragment to communicate with its
+     parent activity via the interface methods without knowing the Activity itself.
+     */
     private OnListActionListener onListActionListener;
-
-
-
-    // Filter options
-    public static final int SHOW_UNFINISHED = 0;
-    public static final int SHOW_ALL = 1;
 
     /**
      * The system calls this when it's time for the fragment to
@@ -223,7 +217,7 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.onCh
     /**
      * Is called when the "done"-checkbox of a task is clicked in the list view. Updates the task in
      * the database accordingly.
-     * This method belongs to the TaskCursorAdapter.onCheckboxClickListener interface.
+     * This method belongs to the TaskCursorAdapter.OnCheckboxClickListener interface.
      * @param clickedTaskIndex id of the task whose checkbox was clicked
      * @param taskDone boolean that indicates whether the task is done (true) or not (false)
      */
@@ -256,6 +250,10 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.onCh
         }
     }
 
+    /**
+     * Filters the task list
+     * @param filterCode code that indicates which filter to apply
+     */
     public void setFilter(int filterCode) {
         Log.d(LOG_TAG, "setFilter: " + filterCode);
 
@@ -338,26 +336,40 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.onCh
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         Log.d(LOG_TAG, "onSaveInstanceState");
-        // Save the list position of the task that was clicked on
-//        outState.putInt("curChoice", currentCheckPosition);
 
         // Save the current task filter
         outState.putInt(KEY_TASK_FILTER, currentTaskFilter);
         Log.d(LOG_TAG, "saved task filter: " + currentTaskFilter);
     }
 
+    /**
+     * Tests whether there are any tasks in the task list
+     */
     public boolean hasTasks() {
         // get the number of tasks
         Cursor cursor = getContext().getContentResolver().query(TaskContract.TaskEntry.CONTENT_URI, null, null, null, null);
-        return cursor.getCount() != 0;
+        int count = 0;
+        if(cursor != null) {
+            count = cursor.getCount();
+            cursor.close();
+        }
+        return count != 0;
     }
 
+    /**
+     * Tests whether there are any finished tasks in the task list
+     */
     public boolean hasFinishedTasks() {
         // get the number of finished tasks
         String selection = TaskContract.TaskEntry.COLUMN_TASK_DONE + " = ?";
         String[] selectionArgs = new String[]{String.valueOf(TaskContract.TaskEntry.DONE_YES)};
         Cursor cursor = getContext().getContentResolver().query(TaskContract.TaskEntry.CONTENT_URI, null, selection, selectionArgs, null);
-        return cursor.getCount() != 0;
+        int count = 0;
+        if(cursor != null) {
+            count = cursor.getCount();
+            cursor.close();
+        }
+        return count != 0;
     }
 
 

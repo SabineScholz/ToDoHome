@@ -4,13 +4,13 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-public class TaskDbHelper extends SQLiteOpenHelper {
+class TaskDbHelper extends SQLiteOpenHelper {
 
     // Tag for log messages
     public static final String LOG_TAG = TaskDbHelper.class.getSimpleName() + " TEST";
 
-    public static final int DATABASE_VERSION = 1;
-    public static final String DATABASE_NAME = "tasks.db";
+    private static final int DATABASE_VERSION = 1;
+    private static final String DATABASE_NAME = "tasks.db";
 
     private static final String SQL_DELETE_ENTRIES =
             "DROP TABLE IF EXISTS " + TaskContract.TaskEntry.TABLE_NAME;

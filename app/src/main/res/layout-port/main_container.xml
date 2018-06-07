@@ -7,5 +7,5 @@
         class="com.example.android.todohome.fragments.TaskListFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/list_fragment_container"></fragment>
+        android:id="@+id/list_fragment_container"/>
 </FrameLayout>
