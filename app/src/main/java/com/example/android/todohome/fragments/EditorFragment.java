@@ -209,10 +209,10 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
             @Override
             public void onClick(View view) {
                 // Save task to database
-                boolean saved = saveTask();
+                Uri uri = saveTask();
 
                 // Inform activity that we're done
-                if(saved) onEditorActionListener.onTaskSaved();
+                if(uri != null) onEditorActionListener.onTaskSaved(uri);
             }
         });
     }
@@ -220,13 +220,13 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
     /**
      * Saves or updates a task.
      */
-    private boolean saveTask() {
+    private Uri saveTask() {
         Log.d(LOG_TAG, "saveTask");
 
         // Check whether a name is provided. If not, inform the user and return.
         if (TextUtils.isEmpty(nameEditText.getText().toString().trim())) {
             Toast.makeText(getContext(), R.string.missing_name, Toast.LENGTH_SHORT).show();
-            return false;
+            return null;
         }
 
         // Create a ContentValues object form the data in the views
@@ -266,10 +266,10 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
             contentValues.put(TaskContract.TaskEntry.COLUMN_TASK_CREATION_DATE, currentTime);
 
             // Insert a new task, get the uri for the new task.
-            Uri newTaskUri = getContext().getContentResolver().insert(TaskContract.TaskEntry.CONTENT_URI, contentValues);
+            currentTaskUri = getContext().getContentResolver().insert(TaskContract.TaskEntry.CONTENT_URI, contentValues);
 
             // Show a toast message depending on whether or not the insertion was successful
-            if (newTaskUri == null) {
+            if (currentTaskUri == null) {
                 // If the new content URI is null, then there was an error with insertion.
                 Toast.makeText(getContext(), getContext().getString(R.string.editor_insert_task_failed), Toast.LENGTH_SHORT).show();
             } else {
@@ -279,8 +279,9 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
 
             // Reset the changeDetected flag (all changes have been saved)
             changeDetected = false;
+
         }
-        return true;
+        return currentTaskUri;
     }
 
 
@@ -594,7 +595,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
      * EditFragment and must therefore implement this interface.
      */
     public interface OnEditorActionListener {
-        void onTaskSaved();
+        void onTaskSaved(Uri uri);
 
         void onTaskDeleted();
     }

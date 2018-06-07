@@ -1,6 +1,5 @@
 package com.example.android.todohome.activities;
 
-import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
@@ -8,12 +7,9 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.example.android.todohome.R;
 import com.example.android.todohome.fragments.EditorFragment;
-
-import java.net.URI;
 
 
 /**
@@ -43,9 +39,6 @@ public class EditorActivity extends AppCompatActivity implements EditorFragment.
     // Tag for the EditorFragment
     private static final String FRAGMENT_TAG = "editorFragment";
 
-    // Task URI
-    private Uri uri;
-
     /**
      * Called when the activity is first created.
      * This is where you should do all of your normal static set up:
@@ -64,7 +57,7 @@ public class EditorActivity extends AppCompatActivity implements EditorFragment.
         setContentView(R.layout.editor_activity_layout);
 
         // Extract the task uri from the intent (null if we are in insert mode)
-        uri = getIntent().getData();
+        Uri uri = getIntent().getData();
 
         // Set activity title to reflect that we're in insert or edit mode
         if (uri == null) {
@@ -104,9 +97,10 @@ public class EditorActivity extends AppCompatActivity implements EditorFragment.
 
     /**
      * Called by the EditorFragment after a task has been saved.
+     * @param uri
      */
     @Override
-    public void onTaskSaved() {
+    public void onTaskSaved(Uri uri) {
         finish();
     }
 
@@ -119,17 +113,17 @@ public class EditorActivity extends AppCompatActivity implements EditorFragment.
         finish();
     }
 
-//    @Override
-//    public void onConfigurationChanged(Configuration newConfig) {
-//        Log.d(LOG_TAG, "onConfigurationChanged");
-//        super.onConfigurationChanged(newConfig);
-//
-//        // Checks the orientation of the screen
-//        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-//            Log.d(LOG_TAG, "finish");
-//            finish();
-//        }
-//    }
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        Log.d(LOG_TAG, "onConfigurationChanged");
+        super.onConfigurationChanged(newConfig);
+
+        // Checks the orientation of the screen
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            Log.d(LOG_TAG, "finish");
+            finish();
+        }
+    }
 
     // ----------------------- Debugging methods ------------------------------
 

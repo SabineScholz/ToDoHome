@@ -1,6 +1,5 @@
 package com.example.android.todohome.fragments;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.ContentUris;
@@ -22,8 +21,8 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.android.todohome.R;
-import com.example.android.todohome.model.TaskContract;
 import com.example.android.todohome.adapter.TaskCursorAdapter;
+import com.example.android.todohome.model.TaskContract;
 
 /**
  * This Fragment contains the list of tasks and a button to create new tasks.

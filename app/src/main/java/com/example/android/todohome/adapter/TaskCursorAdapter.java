@@ -30,7 +30,7 @@ public class TaskCursorAdapter extends CursorAdapter {
     private OnCheckboxClickListener onCheckboxClickListener;
 
     public TaskCursorAdapter(Context context, Cursor c, OnCheckboxClickListener onCheckboxClickListener) {
-        super(context, c, 0); // TODO flags = 0 okay?
+        super(context, c, 0);
         this.onCheckboxClickListener = onCheckboxClickListener;
         Log.d(LOG_TAG, "TaskCursorAdapter()");
     }

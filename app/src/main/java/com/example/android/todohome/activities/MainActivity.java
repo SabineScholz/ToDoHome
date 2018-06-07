@@ -1,15 +1,11 @@
 package com.example.android.todohome.activities;
 
 import android.app.AlertDialog;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.PersistableBundle;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -20,10 +16,6 @@ import com.example.android.todohome.R;
 import com.example.android.todohome.fragments.EditorFragment;
 import com.example.android.todohome.fragments.TaskListFragment;
 import com.example.android.todohome.model.TaskContract;
-
-import java.net.URI;
-
-// TODO while in editor: rotating --> stay in editor, keep data!
 
 /**
  * This Activity contains either one or two Fragments, depending on whether
@@ -98,19 +90,19 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
 
 
         // Retrieve (if existing) the uri of a previously selected task
-//        String uri = null;
-//        if(savedInstanceState != null) {
-//            Log.d(LOG_TAG, "recreate task id: " + savedInstanceState.getString(TASK_URI));
-//            uri = savedInstanceState.getString(TASK_URI);
-//        }
-//
-//        // if the Bundle contained a uri-String,
-//        // create a proper uri from that String
-//        if (uri != null) {
-//            currentTaskUri = Uri.parse(uri);
-//            // show the task details
-//            startEditingTask(currentTaskUri);
-//        }
+        String uri = null;
+        if(savedInstanceState != null) {
+            Log.d(LOG_TAG, "recreate task id: " + savedInstanceState.getString(TASK_URI));
+            uri = savedInstanceState.getString(TASK_URI);
+        }
+
+        // if the Bundle contained a uri-String,
+        // create a proper uri from that String
+        if (uri != null) {
+            currentTaskUri = Uri.parse(uri);
+            // show the task details
+            startEditingTask(currentTaskUri);
+        }
     }
 
     @Override
@@ -203,6 +195,7 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
         Log.d(LOG_TAG, "deleteAllTasks()");
         int deletedRows = getContentResolver().delete(TaskContract.TaskEntry.CONTENT_URI, null, null);
         Log.d(LOG_TAG, "deletedRows: " + deletedRows);
+        resetEditor();
     }
 
     /**
@@ -512,10 +505,11 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
 
     /**
      * Called by the EditorFragment after a task has been saved
+     * @param uri
      */
     @Override
-    public void onTaskSaved() {
-        // do nothing
+    public void onTaskSaved(Uri uri) {
+        startEditingTask(uri);
     }
 
     /**
@@ -523,6 +517,10 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
      */
     @Override
     public void onTaskDeleted() {
+        resetEditor();
+    }
+
+    private void resetEditor() {
         if (getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land) != null) {
             Log.d(LOG_TAG, "removed editorFragment");
             getSupportFragmentManager()
@@ -538,23 +536,6 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
     private boolean hasTwoPaneMode() {
         return findViewById(R.id.editor_fragment_container_land) != null;
     }
-
-    /**
-     * Removes the EditorFragment (if present) when the Activity is restarted
-     */
-//    @Override
-//    protected void onResumeFragments() {
-//        Log.d(LOG_TAG, "onResumeFragments");
-//
-//        // remove the EditorFragment incl. its menu
-//        if (getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land) != null) {
-//            Log.d(LOG_TAG, "removed editorFragment");
-//            getSupportFragmentManager()
-//                    .beginTransaction().
-//                    remove(getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land)).commit();
-//        }
-//        super.onResumeFragments();
-//    }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
