@@ -87,8 +87,6 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
                     remove(getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land)).commit();
         }
 
-
-
         // Retrieve (if existing) the uri of a previously selected task
         String uri = null;
         if(savedInstanceState != null) {
@@ -505,7 +503,7 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
 
     /**
      * Called by the EditorFragment after a task has been saved
-     * @param uri
+     * @param uri uri of the task that has been saved
      */
     @Override
     public void onTaskSaved(Uri uri) {

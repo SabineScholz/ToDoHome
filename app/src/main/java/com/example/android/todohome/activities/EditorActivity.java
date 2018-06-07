@@ -97,7 +97,6 @@ public class EditorActivity extends AppCompatActivity implements EditorFragment.
 
     /**
      * Called by the EditorFragment after a task has been saved.
-     * @param uri
      */
     @Override
     public void onTaskSaved(Uri uri) {

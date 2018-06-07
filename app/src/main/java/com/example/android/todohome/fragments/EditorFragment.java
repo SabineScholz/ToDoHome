@@ -172,9 +172,9 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         doneCheckBox = rootView.findViewById(R.id.done_checkbox);
         creationDateTextView = rootView.findViewById(R.id.creation_date);
 
-        // display the current date in the creation date task view //TODO overwrite old date?
+        // display the current date in the creation date task view
         currentTime = System.currentTimeMillis();
-        creationDateTextView.setText(formatDate(currentTime));
+        if(!editMode()) creationDateTextView.setText(formatDate(currentTime));
 
         if (savedInstanceState == null) {
             // init the CursorLoader only in edit mode
@@ -183,11 +183,6 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
                 getLoaderManager().initLoader(EDITOR_TASK_LOADER, null, this);
                 Log.d(LOG_TAG, "getLoaderManager().initLoader");
             }
-        } else {
-                Log.d(LOG_TAG, "savedInstanceState != null");
-                nameEditText.setText("test");
-                descriptionEditText.setText("test");
-                doneCheckBox.setChecked(false);
         }
 
         // add change listeners to the views so that we can warn the user if he leaves the activity

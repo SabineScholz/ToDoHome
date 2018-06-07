@@ -4,6 +4,9 @@ import android.content.ContentResolver;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
+/**
+ * Contract class for the TaskProvider (ContentProvider)
+ */
 public final class TaskContract {
 
     // Set name for the entire content provider

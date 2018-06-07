@@ -24,8 +24,6 @@ public class TaskCursorAdapter extends CursorAdapter {
     // Tag for log messages
     private static final String LOG_TAG = TaskCursorAdapter.class.getSimpleName() + " TEST";
 
-
-
     // Reference to activity or fragment that implements the OnCheckboxClickListener interface
     private OnCheckboxClickListener onCheckboxClickListener;
 
@@ -42,7 +40,6 @@ public class TaskCursorAdapter extends CursorAdapter {
      */
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-//        Log.d(LOG_TAG, "newView");
 
         // Create new item view
         View view = LayoutInflater.from(context).inflate(R.layout.list_item_layout, parent, false);
@@ -85,7 +82,6 @@ public class TaskCursorAdapter extends CursorAdapter {
         private CheckBox checkBox;
 
         TaskViewHolder(View itemView) {
-//            Log.d(LOG_TAG, "TaskViewHolder()");
 
             // Find sub views of the row view
             nameTextView = itemView.findViewById(R.id.name_text_view);

@@ -4,6 +4,9 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+/**
+ * Helper class to access the SQLite database containing the task data
+ */
 class TaskDbHelper extends SQLiteOpenHelper {
 
     // Tag for log messages

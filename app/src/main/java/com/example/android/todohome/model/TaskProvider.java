@@ -15,6 +15,9 @@ import android.util.Log;
 import static com.example.android.todohome.model.TaskContract.CONTENT_AUTHORITY;
 import static com.example.android.todohome.model.TaskContract.PATH_TASKS;
 
+/**
+ * ContentProvider that provides Task data
+ */
 public class TaskProvider extends ContentProvider {
 
     private static final String LOG_TAG = TaskProvider.class.getSimpleName() + " TEST";
