@@ -73,8 +73,7 @@ public class EditorActivity extends AppCompatActivity implements EditorFragment.
             setTitle(R.string.editor_activity_title_edit_task);
         }
 
-        // only add the EditorFragment the first time this Activity is created (
-        // forgot the reason...
+        // only add the EditorFragment the first time this Activity is created
         if (savedInstanceState == null) {
 
             // Create EditorFragment and add task uri (which is null in insert mode)
@@ -120,24 +119,17 @@ public class EditorActivity extends AppCompatActivity implements EditorFragment.
         finish();
     }
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        Log.d(LOG_TAG, "onConfigurationChanged");
-        super.onConfigurationChanged(newConfig);
-
-        // Checks the orientation of the screen
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show();
-            startMainActivity();
-        }
-    }
-
-    private void startMainActivity() {
-        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-        intent.setData(uri);
-        startActivity(intent);
-    }
-
+//    @Override
+//    public void onConfigurationChanged(Configuration newConfig) {
+//        Log.d(LOG_TAG, "onConfigurationChanged");
+//        super.onConfigurationChanged(newConfig);
+//
+//        // Checks the orientation of the screen
+//        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+//            Log.d(LOG_TAG, "finish");
+//            finish();
+//        }
+//    }
 
     // ----------------------- Debugging methods ------------------------------
 

@@ -145,10 +145,11 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.OnCh
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 Log.d(LOG_TAG, "Click on list item with id " + id);
+                Uri uri = ContentUris.withAppendedId(TaskContract.TaskEntry.CONTENT_URI, id);
                 if (onListActionListener != null) {
                     // Notify the onListActionListener that the user
-                    // wants to edit the task with this id.
-                    onListActionListener.onEditTask(id);
+                    // wants to edit the task with this uri.
+                    onListActionListener.onEditTask(uri);
                 }
             }
         });
@@ -384,7 +385,7 @@ public class TaskListFragment extends Fragment implements TaskCursorAdapter.OnCh
         void onCreateTask();
 
         // Called when the user clicks on a task in the list to edit the task
-        void onEditTask(long id);
+        void onEditTask(Uri uri);
     }
 
 

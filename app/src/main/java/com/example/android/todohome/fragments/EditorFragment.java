@@ -132,6 +132,7 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
         super.onCreate(savedInstanceState);
         Log.d(LOG_TAG, "onCreate");
 
+
         String uri = null;
         // Check whether a task uri can be retrieved
         if (getArguments() != null) {
@@ -182,6 +183,11 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
                 getLoaderManager().initLoader(EDITOR_TASK_LOADER, null, this);
                 Log.d(LOG_TAG, "getLoaderManager().initLoader");
             }
+        } else {
+                Log.d(LOG_TAG, "savedInstanceState != null");
+                nameEditText.setText("test");
+                descriptionEditText.setText("test");
+                doneCheckBox.setChecked(false);
         }
 
         // add change listeners to the views so that we can warn the user if he leaves the activity
@@ -622,6 +628,8 @@ public class EditorFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
+        outState.putString("NAME","test");
+
         super.onSaveInstanceState(outState);
         Log.d(LOG_TAG, "onSaveInstanceState()");
     }

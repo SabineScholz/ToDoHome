@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
 
     // Tag for log messages
     private static final String LOG_TAG = MainActivity.class.getSimpleName() + " TEST";
-    private static final String TASK_ID = "1";
+    private static final String TASK_URI = "1";
 
     // Reference to the TaskListFragment
     private TaskListFragment taskListFragment;
@@ -69,18 +69,13 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
     // Tag for the EditorFragment
     private static final String EDITOR_FRAGMENT_TAG = "editorFragment";
 
-    // id of the currently edited task
-    private long taskId;
+    // uri of the currently edited task
+    private Uri currentTaskUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(LOG_TAG, "onCreate");
         super.onCreate(savedInstanceState);
-
-        if(savedInstanceState != null) {
-            Log.d(LOG_TAG, "recreate task id: " + savedInstanceState.getLong(TASK_ID));
-            taskId = savedInstanceState.getLong(TASK_ID);
-        }
 
         // Set the view for this Activity
         // There are two main_container layouts:
@@ -92,13 +87,41 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
         // Get a reference on the TaskListFragment (which is present in portrait and landscape mode)
         taskListFragment = (TaskListFragment) getFragmentManager().findFragmentById(R.id.list_fragment_container);
 
-        // Check whether the MainActivity was started by the EditorActivity due to a change from portrait to landscape mode
-        Uri uri = getIntent().getData();
-        if(uri != null) {
-            // MainActivity was started by the EditorActivity
-            // get task id to display task details in the EditorFragment
-            Log.d(LOG_TAG, "EditorActivity started MainActivity with uri " + uri.toString());
+        // remove the EditorFragment incl. its menu
+        if (getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land) != null) {
+            Log.d(LOG_TAG, "removed editorFragment");
+            getSupportFragmentManager()
+                    .beginTransaction().
+                    remove(getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land)).commit();
         }
+
+
+
+        // Retrieve (if existing) the uri of a previously selected task
+//        String uri = null;
+//        if(savedInstanceState != null) {
+//            Log.d(LOG_TAG, "recreate task id: " + savedInstanceState.getString(TASK_URI));
+//            uri = savedInstanceState.getString(TASK_URI);
+//        }
+//
+//        // if the Bundle contained a uri-String,
+//        // create a proper uri from that String
+//        if (uri != null) {
+//            currentTaskUri = Uri.parse(uri);
+//            // show the task details
+//            startEditingTask(currentTaskUri);
+//        }
+    }
+
+    @Override
+    protected void onResume() {
+        Log.d(LOG_TAG, "onResume");
+        if(currentTaskUri != null) {
+            Log.d(LOG_TAG, "task uri: " + currentTaskUri);
+        } else {
+            Log.d(LOG_TAG, "task uri is null");
+        }
+        super.onResume();
     }
 
     /**
@@ -359,17 +382,17 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
      * to edit it
      */
     @Override
-    public void onEditTask(long id) {
-        Log.d(LOG_TAG, "onEditTask id " + id);
-        taskId = id;
+    public void onEditTask(Uri uri) {
+        Log.d(LOG_TAG, "onEditTask uri " + uri);
+        currentTaskUri = uri;
         // check whether there is an EditorFragment and whether it contains unsaved changes
         if (editorFragment != null && editorFragment.hasChangeDetected()) {
             // warn the user that there are unsaved changes
             // add id, so that the dialog callback methods can start the editor with this id
-            showUnsavedChangesDialogBeforeEdit(id);
+            showUnsavedChangesDialogBeforeEdit(uri);
         } else {
             // let the user edit the task
-            startEditingTask(id);
+            startEditingTask(uri);
         }
     }
 
@@ -377,7 +400,7 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
      * The dialog is shown when the user wants to edit a task while
      * there are unsaved changes in the editor
      */
-    private void showUnsavedChangesDialogBeforeEdit(final long id) {
+    private void showUnsavedChangesDialogBeforeEdit(final Uri uri) {
         Log.d(LOG_TAG, "showUnsavedChangesDialogBeforeEdit");
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.warning_message);
@@ -396,7 +419,7 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
                     editorFragment.setChangeDetected(false);
 
                     // let the user edit the task
-                    startEditingTask(id);
+                    startEditingTask(uri);
                 }
             }
         });
@@ -411,10 +434,8 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
      * If we are in portrait mode, the EditorActivity is started (new screen).
      * If we are landscape mode, the EditorFragment is added to the current UI
      */
-    private void startEditingTask(long id) {
+    private void startEditingTask(Uri uri) {
         Log.d(LOG_TAG, "startEditingTask");
-        // Create task uri with the id of the task that was clicked on in the list
-        Uri uri = ContentUris.withAppendedId(TaskContract.TaskEntry.CONTENT_URI, id);
 
         // Check whether we are in landscape mode
         if (hasTwoPaneMode()) {
@@ -433,6 +454,10 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
         } else {
             // portrait mode
             Log.d(LOG_TAG, "portrait mode");
+
+
+            // check whether the EditorTaskFragment contains unsaved changed
+
 
             // Start EditorActivity
             // Add the task uri to the intent.
@@ -503,6 +528,7 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
             getSupportFragmentManager()
                     .beginTransaction().
                     remove(getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land)).commit();
+            currentTaskUri = null;
         }
     }
 
@@ -516,32 +542,29 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
     /**
      * Removes the EditorFragment (if present) when the Activity is restarted
      */
-    @Override
-    protected void onResumeFragments() {
-        Log.d(LOG_TAG, "onResumeFragments");
-
-        // remove the EditorFragment incl. its menu
-        if (getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land) != null) {
-            Log.d(LOG_TAG, "removed editorFragment");
-            getSupportFragmentManager()
-                    .beginTransaction().
-                    remove(getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land)).commit();
-
-            if(!hasTwoPaneMode()) {
-                // start EditorActivity
-                Log.d(LOG_TAG, "starting EditorActivity with task id " + taskId);
-                startEditingTask(taskId);
-            }
-        }
-        super.onResumeFragments();
-    }
+//    @Override
+//    protected void onResumeFragments() {
+//        Log.d(LOG_TAG, "onResumeFragments");
+//
+//        // remove the EditorFragment incl. its menu
+//        if (getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land) != null) {
+//            Log.d(LOG_TAG, "removed editorFragment");
+//            getSupportFragmentManager()
+//                    .beginTransaction().
+//                    remove(getSupportFragmentManager().findFragmentById(R.id.editor_fragment_container_land)).commit();
+//        }
+//        super.onResumeFragments();
+//    }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         Log.d(LOG_TAG, "onSaveInstanceState");
         // Save the id of the currently edited task
-        outState.putLong(TASK_ID, taskId);
-        Log.d(LOG_TAG, "save task id to bundle: " + taskId);
+        if(currentTaskUri != null) {
+            outState.putString(TASK_URI, currentTaskUri.toString());
+            Log.d(LOG_TAG, "save task uri to bundle: " + currentTaskUri.toString());
+        }
+
         super.onSaveInstanceState(outState);
     }
 
@@ -559,11 +582,7 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
         super.onPause();
     }
 
-    @Override
-    protected void onResume() {
-        Log.d(LOG_TAG, "onResume");
-        super.onResume();
-    }
+
 
     @Override
     protected void onDestroy() {
