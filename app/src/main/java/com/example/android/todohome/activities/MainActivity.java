@@ -146,7 +146,8 @@ public class MainActivity extends AppCompatActivity implements TaskListFragment.
                 showDeleteFinishedConfirmationDialog();
                 return true;
             case R.id.menu_item_delete_all_tasks:
-                showDeleteAllConfirmationDialog();
+                deleteAllTasks();
+                //showDeleteAllConfirmationDialog();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

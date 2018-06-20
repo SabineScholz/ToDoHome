@@ -32,6 +32,7 @@ import static android.support.test.espresso.action.ViewActions.closeSoftKeyboard
 import static android.support.test.espresso.action.ViewActions.replaceText;
 import static android.support.test.espresso.action.ViewActions.scrollTo;
 import static android.support.test.espresso.action.ViewActions.typeText;
+import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.RootMatchers.isDialog;
 import static android.support.test.espresso.matcher.ViewMatchers.isChecked;
@@ -93,7 +94,7 @@ public class MainActivityTest {
 //        onView(withText("Beispieldaten einfügen")).perform(click());
 
 
-        onView(withText("Löschen")).perform(click());
+        //onView(withText("Löschen")).perform(click());
 
 
         openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
@@ -115,7 +116,7 @@ public class MainActivityTest {
      * Start point: list of tasks
      * @throws Exception
      */
-    @Test
+    //@Test
     public void addTaskWithTitleAndDescription() throws Exception {
 
         // Click the add new task button
@@ -152,7 +153,7 @@ public class MainActivityTest {
      * Start point: list of tasks
      * @throws Exception
      */
-    @Test
+    //@Test
     public void addTaskWithTitleOnly() throws Exception {
 
         // Click the add new task button
@@ -187,7 +188,7 @@ public class MainActivityTest {
      * Start point: list of tasks
      * @throws Exception
      */
-    @Test
+    //@Test
     public void addTaskWithDescriptionOnly() throws Exception {
 
         // Click the add new task button
@@ -214,7 +215,7 @@ public class MainActivityTest {
      * Test 3.1
      * change title in editor
      */
-    @Test
+    //@Test
     public void updateTaskTitle() {
 
         String title = "Groceries";
@@ -248,7 +249,7 @@ public class MainActivityTest {
      * Test 3.2
      * change description in editor
      */
-    @Test
+    //@Test
     public void updateTaskDescription() {
 
         String title = "Groceries";
@@ -280,7 +281,7 @@ public class MainActivityTest {
      * Test 3.3
      * change done/not done in editor
      */
-    @Test
+    //@Test
     public void updateTaskDone() {
 
         String title = "Groceries";
@@ -308,7 +309,7 @@ public class MainActivityTest {
      * Test 3.4
      * change done/not done in the list view
      */
-    @Test
+    //@Test
     public void updateTaskDoneInList() {
 
         String title = "Groceries";
@@ -331,6 +332,35 @@ public class MainActivityTest {
         // Check whether the task is done
         onView(withId(R.id.done_checkbox)).check(matches(isChecked()));
     }
+
+    /**
+     * Test 4.1
+     * delete task in editor
+     */
+    @Test
+    public void deleteTaskInEditor() {
+
+        String title = "Groceries";
+
+        // Check whether the task is present in the task list
+        onView(withText(title)).check(matches(isDisplayingAtLeast(PERCENTAGE_DISPLAYED)));
+
+        // Click on task
+        onData(CursorMatchers.withRowString(TaskContract.TaskEntry.COLUMN_TASK_NAME, title)).perform(click());
+
+        // Click on delete
+        onView(withId(R.id.menu_item_delete_task)).perform(click());
+
+        // Confirm the deletion
+        onView(withText("Löschen")).perform(click());
+
+        // Check whether the list view does not contain the deleted task
+        // NOT WORKING
+//        onData(CursorMatchers.withRowString(TaskContract.TaskEntry.COLUMN_TASK_NAME, title)).check(doesNotExist());
+
+        // Check whether the task is absent in the task list
+        onView(withText(title)).check(doesNotExist());
+        }
 
     //
 //        ViewInteraction textView = onView(
